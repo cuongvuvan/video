@@ -1,0 +1,158 @@
+2022-12-08 16:39:45.616 7815-7849 V/FA: Inactivity, disconnecting from the service
+2022-12-08 16:39:47.461 7815-7815 I/ViewRootImpl@fa2b44[MainFullActivity]: ViewPostIme pointer 0
+2022-12-08 16:39:47.527 7815-7815 I/ViewRootImpl@fa2b44[MainFullActivity]: ViewPostIme pointer 1
+2022-12-08 16:39:47.529 7815-7815 E/VPB: [ (VDEProvisioningHelper.java:140)#Log ] Step: Initialize ...................
+2022-12-08 16:39:47.530 7815-7815 D/CompatibilityChangeReporter: Compat change id reported: 147798919; UID 10284; state: ENABLED
+2022-12-08 16:39:47.534 7815-7815 V/Toast: show: caller = vn.com.vpbank.client.android.ui.main_account.product.card.push2pay.VDEProvisioningHelper.log:141 
+2022-12-08 16:39:47.534 7815-7815 V/Toast: show: focusDisplayId = 0, isFocusInDesktop = false mCustomDisplayId=-1 isDexDualMode=false
+2022-12-08 16:39:47.534 7815-7815 V/Toast: show: isActivityContext = true
+2022-12-08 16:39:47.539 7815-7815 D/OkHttp: request is null
+2022-12-08 16:39:47.539 7815-7815 D/OkHttp: Initialize pro sdk called from app
+2022-12-08 16:39:47.619 7815-7815 D/OkHttp: isProxyDetected null null
+2022-12-08 16:39:47.619 7815-7815 D/OkHttp: flow name push_provisioning
+2022-12-08 16:39:47.620 7815-7895 D/OkHttp: Coroutine started
+2022-12-08 16:39:47.647 7815-7895 D/OkHttp:  init Analytics completed
+2022-12-08 16:39:47.751 7815-7895 D/OkHttp:  Root detection check completed
+2022-12-08 16:39:47.813 7815-7895 D/OkHttp:  Hook detection check completed
+2022-12-08 16:39:47.813 7815-7895 D/OkHttp: isConfigurationComplete 1
+2022-12-08 16:39:51.707 7815-7815 E/VPB: [ (VDEProvisioningHelper.java:53)#InitializationSuccess ] VDE - initializationSuccess ...................
+2022-12-08 16:39:51.708 7815-7815 E/VPB: [ (VDEProvisioningHelper.java:54)#InitializationSuccess ] {"signedNonce":"eyJleHAiOjE2NzA0OTQ5MTEsImlhdCI6MTY3MDQ5MjM5MSwiYWxnIjoiSFMyNTYifQ.MGMwYTMxMDJkZDMwZTExNGZlNjQ5YTEyMjYzYzdhNjFlMjAyYjJlNWM5ZjE2Y2JjY2UxNTI0MTczN2IzNTQ5MQ.blY8izxRdYTjLF5BMWH0D3wk1y5ijca-8imFTim0kA8"}
+2022-12-08 16:39:51.708 7815-7815 E/VPB: [ (CardLinkGPayIntroFragment.java:151)#RequestGetCardEncryptInfo ] Request to get encrypt data payload for VisaSDK .................
+2022-12-08 16:39:52.279 7815-7815 E/VPB: [ (CardLinkGPayIntroFragment.java:157)#OnSuccess ] Response encrypt data payload: encryptCode = eyJleHAiOjE2NzA0OTI1MjksImlhdCI6MTY3MDQ5MjQwOSwiYWxnIjoiSFMyNTYifQ.ZXlKMGVYQWlPaUpLVDFORklpd2laVzVqSWpvaVFUSTFOa2REVFNJc0luUmhaeUk2SW1KZlRVTnJaR05MTXpWNlRscE9hR050Tm5waFFuY2lMQ0poYkdjaU9pSkJNalUyUjBOTlMxY2lMQ0pwZGlJNklsZFFUVTlEYVdweVRHTm5XRnBEWTJraWZRLmJadWUxOXlYaEhuUGRwbXpDU3VrbkUtNTFEWU9ZYUdLY2Z5ZmNQMkZkMlEucl9OUEdqYURBdXdKRXVoYy5jb2htUC1rU3FjRVpyd3dNbjROVUdSYzdscTM5dUNkS0kwak5GQlhFWFVNNDlTRnI4NUc1WGVtUWI0djJ0WWFXWndSdjV6YzV0TERSNE5rVEZ3RXJLR2tjYW8yRUdhdjhRYV9HSnJiQXZ4eHZYZDRuYjhQNDd4aTI0aVk2cXZvVVUzamlVVl9EUXhfcGs0RzZOT1dOV2MxWTlkal9ucXhMVXlKYnlSYUhtb0pTT2pRZmFzVmM1anZvRHVSVl9hREhiWjlzX3FMRmk1UmZnS0tUWjBpNEV3WTBoVlFpSXg5T1JFc3B1STlNbEM3T2ZFdTM5clAzM1FCRklOZEhsQXFDWGlDM1R1UmtYZWRFZ3RkejBXdk5nMlhXWGhWRDMyWk90cHY0S1MwS2FRRnpwTGJ1MEF4UE5VZEZfZEJHY0g5ekRVZGw3dnFRM2x6S1lTSDdwNE9tZVp5OXJxamp6bllJQ0tmMWVkdS1XSHRudTk5bndDVHdDTVFjQ0E5SFdRUDI1WDNmSnFlT1lUQ2JtS05aRTI5T3ZjWTA3WWlLb2Q1RHV6UmVES080OUtFRGV1VDg0Yk0tNmtaemt2UnNXOXgxV3A5Q2NfYjBwRUxTTHRxazU4YkN2dXZTSTk0WTdvYXRsQUkzdFVqM3lMNDJfODFfTVQ3akdqS3BEejdNSV9FSm1Ob29GZlBjRTF2ZmlNNm5ScEhfYlloRHBKd0J4N00tTzU4T3hvLTZFZmVXVjdaallIam9EQ28ubmgxWWpScmx4UTktWHkxM0Y0XzU4QQ.YIc5e2YH66DKNfPF_LE6tIXLo_ratetB_0BzH8yasiY
+2022-12-08 16:39:52.279 7815-7815 E/VPB: [ (VDEProvisioningHelper.java:140)#Log ] Step: GetSupportWallets ...................
+2022-12-08 16:39:52.282 7815-7815 V/Toast: show: caller = vn.com.vpbank.client.android.ui.main_account.product.card.push2pay.VDEProvisioningHelper.log:141 
+2022-12-08 16:39:52.282 7815-7815 V/Toast: show: focusDisplayId = 0, isFocusInDesktop = false mCustomDisplayId=-1 isDexDualMode=false
+2022-12-08 16:39:52.282 7815-7815 V/Toast: show: isActivityContext = true
+2022-12-08 16:40:05.523 7815-7815 E/VPB: [ (VDEProvisioningHelper.java:79)#SupportedWalletSuccess ] VDE - supportedWalletSuccess ...................
+2022-12-08 16:40:05.524 7815-7815 E/VPB: [ (VDEProvisioningHelper.java:80)#SupportedWalletSuccess ] {"wallets":[{"category":"Pays","code":"GooglePayPushProvision","logoImageUrlString":"https://assets.sbx.digitalcardservice.com/daca/issuprov/GooglePay.png","name":"GOOGLE","reason":{"reason":""},"status":"ReadyToProvision"}]}
+2022-12-08 16:40:05.524 7815-7815 E/VPB: [ (VDEProvisioningHelper.java:140)#Log ] Step: CardProvisioning ...................
+2022-12-08 16:40:05.526 7815-7815 V/Toast: show: caller = vn.com.vpbank.client.android.ui.main_account.product.card.push2pay.VDEProvisioningHelper.log:141 
+2022-12-08 16:40:05.526 7815-7815 V/Toast: show: focusDisplayId = 0, isFocusInDesktop = false mCustomDisplayId=-1 isDexDualMode=false
+2022-12-08 16:40:05.526 7815-7815 V/Toast: show: isActivityContext = true
+2022-12-08 16:40:05.550 7815-7849 V/FA: Recording user engagement, ms: 24951
+2022-12-08 16:40:05.550 7815-7849 V/FA: Connecting to remote service
+2022-12-08 16:40:05.551 7815-7849 V/FA: Activity paused, time: 1752838
+2022-12-08 16:40:05.552 7815-7849 D/FA: Logging event (FE): user_engagement(_e), Bundle[{firebase_event_origin(_o)=auto, engagement_time_msec(_et)=24951, firebase_screen_class(_sc)=MainFullActivity, firebase_screen_id(_si)=-3581975754337634667}]
+2022-12-08 16:40:05.553 7815-7815 D/SensorManager: unregisterListener
+2022-12-08 16:40:05.561 7815-7849 V/FA: Connection attempt already in progress
+2022-12-08 16:40:05.572 7815-7815 I/ViewRootImpl@fa2b44[MainFullActivity]: Relayout returned: old=(0,0,1080,2400) new=(0,0,1080,2400) req=(1080,2400)0 dur=4 res=0x1 s={true -5476376615504435040} ch=false fn=1831
+2022-12-08 16:40:05.584 7815-7815 V/FA: onActivityCreated
+2022-12-08 16:40:05.587 7815-7815 I/DecorView: [INFO] isPopOver=false, config=true
+2022-12-08 16:40:05.587 7815-7815 I/DecorView: updateCaptionType >> DecorView@4ba1246[], isFloating=false, isApplication=true, hasWindowControllerCallback=true, hasWindowDecorCaption=false
+2022-12-08 16:40:05.587 7815-7815 D/DecorView: setCaptionType = 0, this = DecorView@4ba1246[]
+2022-12-08 16:40:05.591 7815-7815 W/pbankonline.ua: Accessing hidden method Landroid/view/ViewGroup;->makeOptionalFitsSystemWindows()V (unsupported, reflection, allowed)
+2022-12-08 16:40:05.595 7815-7815 I/Dialog: mIsDeviceDefault = false, mIsSamsungBasicInteraction = false, isMetaDataInActivity = false
+2022-12-08 16:40:05.619 7815-7815 I/DecorView: [INFO] isPopOver=false, config=false
+2022-12-08 16:40:05.619 7815-7815 I/DecorView: updateCaptionType >> DecorView@638c775[], isFloating=true, isApplication=true, hasWindowControllerCallback=false, hasWindowDecorCaption=false
+2022-12-08 16:40:05.619 7815-7815 D/DecorView: setCaptionType = 0, this = DecorView@638c775[]
+2022-12-08 16:40:05.696 7815-7849 D/FA: Logging event (FE): screen_view(_vs), Bundle[{firebase_event_origin(_o)=auto, firebase_previous_class(_pc)=MainFullActivity, firebase_previous_id(_pi)=-3581975754337634667, firebase_screen_class(_sc)=SpinnerActivity, firebase_screen_id(_si)=-3581975754337634666}]
+2022-12-08 16:40:05.703 7815-7815 D/SensorManager: registerListener :: 1, LSM6DSO Accelerometer, 66667, 0, 
+2022-12-08 16:40:05.705 7815-7815 I/MSHandlerLifeCycle: isMultiSplitHandlerRequested: ignored. pkg=com.vnpay.vpbankonline.uat parent=null callers=com.android.internal.policy.DecorView.setVisibility:4216 android.app.ActivityThread.handleResumeActivity:5285 android.app.servertransaction.ResumeActivityItem.execute:54 android.app.servertransaction.ActivityTransactionItem.execute:45 android.app.servertransaction.TransactionExecutor.executeLifecycleState:176 
+2022-12-08 16:40:05.705 7815-7815 I/MSHandlerLifeCycle: removeMultiSplitHandler: no exist. decor=DecorView@4ba1246[]
+2022-12-08 16:40:05.705 7815-7849 V/FA: Connection attempt already in progress
+2022-12-08 16:40:05.705 7815-7849 V/FA: Connection attempt already in progress
+2022-12-08 16:40:05.705 7815-7849 V/FA: Activity resumed, time: 1752984
+2022-12-08 16:40:05.710 7815-7815 I/ViewRootImpl@fbd18c8[SpinnerActivity]: setView = com.android.internal.policy.DecorView@4ba1246 TM=true
+2022-12-08 16:40:05.710 7815-7815 I/MSHandlerLifeCycle: isMultiSplitHandlerRequested: windowingMode=1 isFullscreen=true isPopOver=false isHidden=false skipActivityType=false isHandlerType=true this: DecorView@4ba1246[SpinnerActivity]
+2022-12-08 16:40:05.710 7815-7815 I/MSHandlerLifeCycle: removeMultiSplitHandler: no exist. decor=DecorView@4ba1246[SpinnerActivity]
+2022-12-08 16:40:05.721 7815-7815 I/ViewRootImpl@fbd18c8[SpinnerActivity]: Relayout returned: old=(0,0,1080,2400) new=(0,0,1080,2400) req=(1080,2400)0 dur=4 res=0x7 s={true -5476376615505246000} ch=true fn=-1
+2022-12-08 16:40:05.723 7815-7815 I/ViewRootImpl@fbd18c8[SpinnerActivity]: [DP] dp(1) 1 android.view.ViewRootImpl.reportNextDraw:11233 android.view.ViewRootImpl.performTraversals:4075 android.view.ViewRootImpl.doTraversal:2819 
+2022-12-08 16:40:05.723 7815-7815 D/ViewRootImpl@fbd18c8[SpinnerActivity]: Creating frameCompleteCallback mNextDrawUseBlastSync=false mReportNextDraw=true commitCallbacks size=0
+2022-12-08 16:40:05.725 7815-7899 D/ViewRootImpl@fbd18c8[SpinnerActivity]: Received frameCompleteCallback frameNum=1
+2022-12-08 16:40:05.726 7815-7815 I/ViewRootImpl@fbd18c8[SpinnerActivity]: [DP] pdf(0) 1 android.view.ViewRootImpl.lambda$createFrameCompleteCallback$3$ViewRootImpl:4833 android.view.ViewRootImpl$$ExternalSyntheticLambda15.run:6 android.os.Handler.handleCallback:938 
+2022-12-08 16:40:05.726 7815-7815 I/ViewRootImpl@fbd18c8[SpinnerActivity]: [DP] rdf()
+2022-12-08 16:40:05.728 7815-7849 D/FA: Connected to remote service
+2022-12-08 16:40:05.728 7815-7849 V/FA: Processing queued up service tasks: 4
+2022-12-08 16:40:05.740 7815-7815 I/ViewRootImpl@5eef974[SpinnerActivity]: setView = com.android.internal.policy.DecorView@638c775 TM=true
+2022-12-08 16:40:05.740 7815-7815 I/ViewRootImpl@fa2b44[MainFullActivity]: MSG_WINDOW_FOCUS_CHANGED 0 1
+2022-12-08 16:40:05.750 7815-7815 I/ViewRootImpl@5eef974[SpinnerActivity]: Relayout returned: old=(0,75,1080,2265) new=(285,1042,794,1297) req=(509,255)0 dur=5 res=0x7 s={true -5476376615504827440} ch=true fn=-1
+2022-12-08 16:40:05.753 7815-7815 I/ViewRootImpl@5eef974[SpinnerActivity]: [DP] dp(1) 1 android.view.ViewRootImpl.reportNextDraw:11233 android.view.ViewRootImpl.performTraversals:4075 android.view.ViewRootImpl.doTraversal:2819 
+2022-12-08 16:40:05.753 7815-7815 D/ViewRootImpl@5eef974[SpinnerActivity]: Creating frameCompleteCallback mNextDrawUseBlastSync=false mReportNextDraw=true commitCallbacks size=0
+2022-12-08 16:40:05.757 7815-7899 D/ViewRootImpl@5eef974[SpinnerActivity]: Received frameCompleteCallback frameNum=1
+2022-12-08 16:40:05.759 7815-7815 I/ViewRootImpl@5eef974[SpinnerActivity]: [DP] pdf(0) 1 android.view.ViewRootImpl.lambda$createFrameCompleteCallback$3$ViewRootImpl:4833 android.view.ViewRootImpl$$ExternalSyntheticLambda15.run:6 android.os.Handler.handleCallback:938 
+2022-12-08 16:40:05.759 7815-7815 I/ViewRootImpl@5eef974[SpinnerActivity]: [DP] rdf()
+2022-12-08 16:40:05.766 7815-7815 I/ViewRootImpl@fbd18c8[SpinnerActivity]: MSG_WINDOW_FOCUS_CHANGED 1 1
+2022-12-08 16:40:05.767 7815-7815 D/InputMethodManager: startInputInner - Id : 0
+2022-12-08 16:40:05.767 7815-7815 I/InputMethodManager: startInputInner - mService.startInputOrWindowGainedFocus
+2022-12-08 16:40:05.769 7815-7815 I/ViewRootImpl@fbd18c8[SpinnerActivity]: MSG_WINDOW_FOCUS_CHANGED 0 1
+2022-12-08 16:40:05.780 7815-7815 I/ViewRootImpl@5eef974[SpinnerActivity]: MSG_WINDOW_FOCUS_CHANGED 1 1
+2022-12-08 16:40:05.783 7815-7815 D/InputMethodManager: startInputInner - Id : 0
+2022-12-08 16:40:05.783 7815-7815 I/InputMethodManager: startInputInner - mService.startInputOrWindowGainedFocus
+2022-12-08 16:40:06.175 7815-7815 I/ViewRootImpl@fa2b44[MainFullActivity]: handleAppVisibility mAppVisible=true visible=false
+2022-12-08 16:40:06.177 7815-7815 I/ViewRootImpl@fa2b44[MainFullActivity]: stopped(true) old=false
+2022-12-08 16:40:06.193 7815-7815 I/MSHandlerLifeCycle: isMultiSplitHandlerRequested: windowingMode=1 isFullscreen=true isPopOver=false isHidden=false skipActivityType=false isHandlerType=true this: DecorView@8a214ea[MainFullActivity]
+2022-12-08 16:40:06.193 7815-7815 I/MSHandlerLifeCycle: removeMultiSplitHandler: no exist. decor=DecorView@8a214ea[MainFullActivity]
+2022-12-08 16:40:06.217 7815-7815 I/ViewRootImpl@fa2b44[MainFullActivity]: Relayout returned: old=(0,0,1080,2400) new=(0,0,1080,2400) req=(1080,2400)8 dur=9 res=0x5 s={false 0} ch=false fn=-1
+2022-12-08 16:40:10.744 7815-7849 V/FA: Inactivity, disconnecting from the service
+2022-12-08 16:40:12.491 7815-7815 E/VPB: [ (VDEProvisioningHelper.java:114)#CardProvisioningFailure ] VDE - cardProvisioningFailure ...................
+2022-12-08 16:40:12.493 7815-7815 E/VPB: [ (VDEProvisioningHelper.java:115)#CardProvisioningFailure ] {"code":"VP_ERROR_405","correlationId":"483B4320D75D45E9A37B11B474D8F84C_VMCP","description":"Sorry, we are unable to process your request at this time. Please try again later.","type":"ApiError"}
+2022-12-08 16:40:12.493 7815-7815 E/VPB: [ (CardLinkGPayIntroFragment.java:100)#CardProvisioningFailure ] Why it happened to me !!!!!!!!!
+2022-12-08 16:40:12.517 7815-7849 V/FA: Recording user engagement, ms: 6824
+2022-12-08 16:40:12.517 7815-7849 V/FA: Connecting to remote service
+2022-12-08 16:40:12.517 7815-7849 V/FA: Activity paused, time: 1759807
+2022-12-08 16:40:12.518 7815-7849 D/FA: Logging event (FE): user_engagement(_e), Bundle[{firebase_event_origin(_o)=auto, engagement_time_msec(_et)=6824, firebase_screen_class(_sc)=SpinnerActivity, firebase_screen_id(_si)=-3581975754337634666}]
+2022-12-08 16:40:12.520 7815-7815 D/SensorManager: unregisterListener
+2022-12-08 16:40:12.529 7815-7849 V/FA: Connection attempt already in progress
+2022-12-08 16:40:12.542 7815-7815 I/ViewRootImpl@fbd18c8[SpinnerActivity]: Relayout returned: old=(0,0,1080,2400) new=(0,0,1080,2400) req=(1080,2400)0 dur=2 res=0x1 s={true -5476376615505246000} ch=false fn=2
+2022-12-08 16:40:12.543 7815-7815 I/ViewRootImpl@fa2b44[MainFullActivity]: handleAppVisibility mAppVisible=false visible=true
+2022-12-08 16:40:12.543 7815-7815 I/ViewRootImpl@fa2b44[MainFullActivity]: stopped(false) old=true
+2022-12-08 16:40:12.547 7815-7815 I/MSHandlerLifeCycle: isMultiSplitHandlerRequested: windowingMode=1 isFullscreen=true isPopOver=false isHidden=false skipActivityType=false isHandlerType=true this: DecorView@8a214ea[MainFullActivity]
+2022-12-08 16:40:12.547 7815-7815 I/MSHandlerLifeCycle: removeMultiSplitHandler: no exist. decor=DecorView@8a214ea[MainFullActivity]
+2022-12-08 16:40:12.547 7815-7815 I/ViewRootImpl@fa2b44[MainFullActivity]: stopped(false) old=false
+2022-12-08 16:40:12.548 7815-7849 D/FA: Logging event (FE): screen_view(_vs), Bundle[{firebase_event_origin(_o)=auto, firebase_previous_class(_pc)=SpinnerActivity, firebase_previous_id(_pi)=-3581975754337634666, firebase_screen_class(_sc)=MainFullActivity, firebase_screen_id(_si)=-3581975754337634667}]
+2022-12-08 16:40:12.554 7815-7815 D/SensorManager: registerListener :: 1, LSM6DSO Accelerometer, 66667, 0, 
+2022-12-08 16:40:12.554 7815-7849 V/FA: Connection attempt already in progress
+2022-12-08 16:40:12.554 7815-7849 V/FA: Connection attempt already in progress
+2022-12-08 16:40:12.555 7815-7849 V/FA: Activity resumed, time: 1759838
+2022-12-08 16:40:12.558 7815-7815 I/MSHandlerLifeCycle: isMultiSplitHandlerRequested: windowingMode=1 isFullscreen=true isPopOver=false isHidden=false skipActivityType=false isHandlerType=true this: DecorView@8a214ea[MainFullActivity]
+2022-12-08 16:40:12.558 7815-7815 I/MSHandlerLifeCycle: removeMultiSplitHandler: no exist. decor=DecorView@8a214ea[MainFullActivity]
+2022-12-08 16:40:12.558 7815-7815 I/ViewRootImpl@5eef974[SpinnerActivity]: MSG_WINDOW_FOCUS_CHANGED 0 1
+2022-12-08 16:40:12.559 7815-7849 D/FA: Connected to remote service
+2022-12-08 16:40:12.559 7815-7849 V/FA: Processing queued up service tasks: 4
+2022-12-08 16:40:12.567 7815-7815 I/ViewRootImpl@fa2b44[MainFullActivity]: Relayout returned: old=(0,0,1080,2400) new=(0,0,1080,2400) req=(1080,2400)0 dur=5 res=0x7 s={true -5476376615504295520} ch=true fn=-1
+2022-12-08 16:40:12.568 7815-7815 I/ViewRootImpl@fa2b44[MainFullActivity]: [DP] dp(1) 1 android.view.ViewRootImpl.reportNextDraw:11233 android.view.ViewRootImpl.performTraversals:4075 android.view.ViewRootImpl.doTraversal:2819 
+2022-12-08 16:40:12.568 7815-7815 D/ViewRootImpl@fa2b44[MainFullActivity]: Creating frameCompleteCallback mNextDrawUseBlastSync=false mReportNextDraw=true commitCallbacks size=0
+2022-12-08 16:40:12.575 7815-7899 D/ViewRootImpl@fa2b44[MainFullActivity]: Received frameCompleteCallback frameNum=1
+2022-12-08 16:40:12.575 7815-7815 I/ViewRootImpl@fa2b44[MainFullActivity]: [DP] pdf(0) 1 android.view.ViewRootImpl.lambda$createFrameCompleteCallback$3$ViewRootImpl:4833 android.view.ViewRootImpl$$ExternalSyntheticLambda15.run:6 android.os.Handler.handleCallback:938 
+2022-12-08 16:40:12.575 7815-7815 I/ViewRootImpl@fa2b44[MainFullActivity]: [DP] rdf()
+2022-12-08 16:40:12.598 7815-7815 I/ViewRootImpl@fa2b44[MainFullActivity]: MSG_WINDOW_FOCUS_CHANGED 1 1
+2022-12-08 16:40:12.599 7815-7815 D/InputMethodManager: startInputInner - Id : 0
+2022-12-08 16:40:12.599 7815-7815 I/InputMethodManager: startInputInner - mService.startInputOrWindowGainedFocus
+2022-12-08 16:40:12.890 7815-7815 I/ViewRootImpl@fbd18c8[SpinnerActivity]: handleAppVisibility mAppVisible=true visible=false
+2022-12-08 16:40:12.915 7815-7815 I/ViewRootImpl@fbd18c8[SpinnerActivity]: Relayout returned: old=(0,0,1080,2400) new=(0,0,1080,2400) req=(1080,2400)8 dur=6 res=0x5 s={false 0} ch=true fn=3
+2022-12-08 16:40:12.919 7815-7815 I/ViewRootImpl@5eef974[SpinnerActivity]: handleAppVisibility mAppVisible=true visible=false
+2022-12-08 16:40:12.923 7815-7815 I/ViewRootImpl@5eef974[SpinnerActivity]: stopped(true) old=false
+2022-12-08 16:40:12.923 7815-7815 I/ViewRootImpl@fbd18c8[SpinnerActivity]: stopped(true) old=false
+2022-12-08 16:40:12.924 7815-7815 I/MSHandlerLifeCycle: isMultiSplitHandlerRequested: windowingMode=1 isFullscreen=true isPopOver=false isHidden=false skipActivityType=false isHandlerType=true this: DecorView@4ba1246[SpinnerActivity]
+2022-12-08 16:40:12.924 7815-7815 I/MSHandlerLifeCycle: removeMultiSplitHandler: no exist. decor=DecorView@4ba1246[SpinnerActivity]
+2022-12-08 16:40:12.925 7815-7815 I/MSHandlerLifeCycle: removeMultiSplitHandler: no exist. decor=DecorView@4ba1246[SpinnerActivity]
+2022-12-08 16:40:12.925 7815-7815 I/ViewRootImpl@fbd18c8[SpinnerActivity]: dispatchDetachedFromWindow
+2022-12-08 16:40:12.930 7815-7815 D/InputTransport: Input channel destroyed: '57e2c96', fd=151
+2022-12-08 16:40:12.931 7815-7815 E/WindowManager: android.view.WindowLeaked: Activity com.visa.mobileEnablement.featureModuleCore.pushProvisioning.ui.headless.SpinnerActivity has leaked window DecorView@638c775[SpinnerActivity] that was originally added here
+        at android.view.ViewRootImpl.<init>(ViewRootImpl.java:1107)
+        at android.view.ViewRootImpl.<init>(ViewRootImpl.java:1082)
+        at android.view.WindowManagerGlobal.addView(WindowManagerGlobal.java:469)
+        at android.view.WindowManagerImpl.addView(WindowManagerImpl.java:133)
+        at android.app.Dialog.show(Dialog.java:506)
+        at com.visa.mobileEnablement.featureModuleCore.pushProvisioning.ui.headless.SpinnerActivity$e.invokeSuspend(SourceFile:187)
+        at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)
+        at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:106)
+        at android.os.Handler.handleCallback(Handler.java:938)
+        at android.os.Handler.dispatchMessage(Handler.java:99)
+        at android.os.Looper.loopOnce(Looper.java:226)
+        at android.os.Looper.loop(Looper.java:313)
+        at android.app.ActivityThread.main(ActivityThread.java:8582)
+        at java.lang.reflect.Method.invoke(Native Method)
+        at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:563)
+        at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:1133)
+2022-12-08 16:40:12.940 7815-7815 I/ViewRootImpl@5eef974[SpinnerActivity]: 1) Force to draw a frame when frame become empty from non-empty
+2022-12-08 16:40:12.940 7815-7815 I/ViewRootImpl@5eef974[SpinnerActivity]: Relayout returned: old=(285,1042,794,1297) new=(0,0,0,0) req=(509,255)8 dur=7 res=0x0 s={false 0} ch=false fn=-1
+2022-12-08 16:40:12.942 7815-7815 I/DecorView: [INFO] isPopOver=false, config=true
+2022-12-08 16:40:12.942 7815-7815 I/DecorView: updateCaptionType >> DecorView@638c775[SpinnerActivity], isFloating=true, isApplication=true, hasWindowControllerCallback=false, hasWindowDecorCaption=false
+2022-12-08 16:40:12.942 7815-7815 D/DecorView: setCaptionType = 0, this = DecorView@638c775[SpinnerActivity]
+2022-12-08 16:40:12.942 7815-7815 I/MSHandlerLifeCycle: isMultiSplitHandlerRequested: ignored. pkg=com.vnpay.vpbankonline.uat isActivity=false callers=com.android.internal.policy.DecorView.onConfigurationChanged:3234 android.view.View.dispatchConfigurationChanged:15681 android.view.ViewGroup.dispatchConfigurationChanged:1659 android.view.ViewRootImpl.updateConfiguration:6061 android.view.ViewRootImpl.performConfigurationChange:6024 
+2022-12-08 16:40:12.942 7815-7815 I/MSHandlerLifeCycle: removeMultiSplitHandler: no exist. decor=DecorView@638c775[SpinnerActivity]
+2022-12-08 16:40:12.944 7815-7815 I/MSHandlerLifeCycle: removeMultiSplitHandler: no exist. decor=DecorView@638c775[SpinnerActivity]
+2022-12-08 16:40:12.944 7815-7815 I/ViewRootImpl@5eef974[SpinnerActivity]: dispatchDetachedFromWindow
+2022-12-08 16:40:12.948 7815-7815 D/InputTransport: Input channel destroyed: '27679c ', fd=156
+2022-12-08 16:40:17.571 7815-7849 V/FA: Inactivity, disconnecting from the service
