@@ -1,0 +1,1053 @@
+Subject: [PATCH] new_concept_click_notify_to_detail2
+---
+Index: app/src/main/java/vn/com/vpbank/client/android/ocbrequest/ocbrequest/FirebaseService.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/vn/com/vpbank/client/android/ocbrequest/ocbrequest/FirebaseService.java b/app/src/main/java/vn/com/vpbank/client/android/ocbrequest/ocbrequest/FirebaseService.java
+--- a/app/src/main/java/vn/com/vpbank/client/android/ocbrequest/ocbrequest/FirebaseService.java	(revision 7f33a9b87766a351f744e24351f0befe4c628184)
++++ b/app/src/main/java/vn/com/vpbank/client/android/ocbrequest/ocbrequest/FirebaseService.java	(date 1726222964460)
+@@ -30,6 +30,7 @@
+ import vn.com.vpbank.client.android.ocbrequest.requestmodal.transfer_gift.TransferGiftWishDetailResponse;
+ import vn.com.vpbank.client.android.ocbrequest.requestmodal.transfer_gift.TransferGiftWishListResponse;
+ import vn.com.vpbank.client.android.ocbrequest.requestmodal.what_is_new.WhatIsNew;
++import vn.com.vpbank.client.android.ui.notification.modal.NotificationDetailResponse;
+ import vn.com.vpbank.client.android.ui.notification.modal.NotificationsResponse;
+ 
+ public interface FirebaseService {
+@@ -113,6 +114,9 @@
+     @POST("device/auditLogDevice")
+     Call<ConfigIconResponse> getLog(@Body RequestBody bodyBanner);
+ 
++    @POST("get/notificationById")
++    Call<NotificationDetailResponse> getNotificationById(@Body RequestBody bodyBanner);
++
+     @POST("/get/myQR")
+     Call<BackgroundQrObject> getMyQR();
+ 
+Index: app/src/main/java/vn/com/vpbank/client/android/ui/notification/NotificationController.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/vn/com/vpbank/client/android/ui/notification/NotificationController.java b/app/src/main/java/vn/com/vpbank/client/android/ui/notification/NotificationController.java
+--- a/app/src/main/java/vn/com/vpbank/client/android/ui/notification/NotificationController.java	(revision 7f33a9b87766a351f744e24351f0befe4c628184)
++++ b/app/src/main/java/vn/com/vpbank/client/android/ui/notification/NotificationController.java	(date 1726461489364)
+@@ -6,14 +6,18 @@
+ import android.content.Context;
+ import android.content.Intent;
+ import android.os.Build;
++import android.os.Bundle;
+ import android.text.TextUtils;
+ import android.util.Base64;
+ 
+ import androidx.activity.result.ActivityResultLauncher;
++import androidx.annotation.NonNull;
+ 
++import com.qulix.android.support.ui.ProgressPanel;
+ import com.vpbank.android.secure_storage.VPBStorage;
+ import com.vpbank.log_app.LogApp;
+ 
++import org.json.JSONException;
+ import org.json.JSONObject;
+ 
+ import java.text.SimpleDateFormat;
+@@ -31,9 +35,11 @@
+ import vn.com.vpbank.client.android.ApplicationProperties;
+ import vn.com.vpbank.client.android.R;
+ import vn.com.vpbank.client.android.UserSession;
++import vn.com.vpbank.client.android.broadcast.NotificationEvent;
+ import vn.com.vpbank.client.android.broadcast.NotificationService;
+ import vn.com.vpbank.client.android.navigation.StartFragmentContext;
+ import vn.com.vpbank.client.android.navigation_editor.NavigationActivity;
++import vn.com.vpbank.client.android.newconcept.login.VPLoginActivity;
+ import vn.com.vpbank.client.android.ocbrequest.network.FirebaseServiceGenerator;
+ import vn.com.vpbank.client.android.ocbrequest.ocbrequest.FirebaseService;
+ import vn.com.vpbank.client.android.ui.VPAuthActivity;
+@@ -45,6 +51,7 @@
+ import vn.com.vpbank.client.android.ui.more.mgm.GetMemberCampaignFragment;
+ import vn.com.vpbank.client.android.ui.notification.modal.NotificationBalanceChangeHashMto;
+ import vn.com.vpbank.client.android.ui.notification.modal.NotificationBalanceChangeMto;
++import vn.com.vpbank.client.android.ui.notification.modal.NotificationDetailResponse;
+ import vn.com.vpbank.client.android.ui.notification.modal.NotificationPromotionMto;
+ import vn.com.vpbank.client.android.ui.notification.modal.NotificationsResponse;
+ import vn.com.vpbank.client.android.ui.payments.PaymentCategoryFragment;
+@@ -85,6 +92,13 @@
+         SharedPreferenceUtils.getInstance(context).setValue(SharedPreferenceUtils.KEY_NOTIFICATION_COUNT, count);
+         ShortcutBadger.applyCount(context, count);
+     }
++
++    public static void decreaseNotifyCount(Context context) {
++        int count = getNotifyCount(context) - 1;
++        if (count < 0) count = 0;
++        SharedPreferenceUtils.getInstance(context).setValue(SharedPreferenceUtils.KEY_NOTIFICATION_COUNT, count);
++        ShortcutBadger.applyCount(context, count);
++    }
+ 
+     public static boolean isActiveViewFirstNotify(Context context, String userId) {
+         return SharedPreferenceUtils.getInstance(context).getBoolanValue(userId + "_ACTIVE_VIEW_FIRST_BALANCE_CHANGE", false);
+@@ -283,9 +297,6 @@
+         syncActionBalanceChange(context, notificationBalanceChangeMto, "delete", jwt, progress);
+     }
+ 
+-    //Zzz
+-
+-
+     public static String decodeContent(Context context, String contentEn, String userId) throws Exception {
+ 
+         byte[] result = Base64.decode(contentEn, Base64.DEFAULT);
+@@ -300,7 +311,6 @@
+         return AESService.decrypt(contentKeyStr, encodeByte, ivKey);
+     }
+ 
+-
+     // 28Feb2024 - Epic14836 - cuongvv: bổ sung multi button trong màn hình chi tiết thông báo
+     public static void handleClickNotifyPromotionInsideAuthen(Context context, StartFragmentContext startFragmentContext,
+                                                               UserSession userSession,
+@@ -517,5 +527,57 @@
+         }
+     }
+ 
++    // 2024Aug9 - epic17808 - cuongvv6: click notify điều hướng vào detail
++    public static void requestGetNotificationDetail(Context context, StartFragmentContext startFragmentContext, NotificationService notificationService, ProgressPanel progressPanel, String notifyID, String jwt) {
++        // create request data
++        JSONObject paramBody = new JSONObject();
++        try {
++            paramBody.put("data", jwt);
++            paramBody.put("id", notifyID);
++        } catch (JSONException e) {
++            LogApp.e(e);
++        }
++        RequestBody requestBody = RequestBody.create(okhttp3.MediaType.parse("application/json"), paramBody.toString());
++
++        // create service
++        String firebaseKey = new ApplicationProperties(context).getFirebaseKey();
++        FirebaseService firebaseService = FirebaseServiceGenerator.createService(FirebaseService.class, firebaseKey, context);
++
++        // request
++        Call<NotificationDetailResponse> call = firebaseService.getNotificationById(requestBody);
++        if (progressPanel != null) progressPanel.showProgress();
++        call.enqueue(new Callback<>() {
++            @Override
++            public void onResponse(@NonNull Call<NotificationDetailResponse> call, @NonNull Response<NotificationDetailResponse> response) {
++                if (progressPanel != null) progressPanel.hideProgress();
++                if (!response.isSuccessful()
++                        || response.body() == null
++                        || response.body().getNotificationPromotionMto() == null) {
++                    LogApp.e("Request requestGetNotificationDetail: NOT SUCCESS ............");
++                    return;
++                }
++
++                NotificationPromotionMto notificationPromotionMto = response.body().getNotificationPromotionMto();
++                if (context instanceof VPLoginActivity) {
++                    HashMap<String, Object> data = new HashMap<>();
++                    data.put("notificationPromotionMto", notificationPromotionMto);
++                    VPMainFullActivity.start(context, NotificationPromotionViewFragment.class.getName(), data);
++                } else {
++                    FragmentUtils.addChildFull(context, NotificationPromotionViewFragment.newInstance(notificationPromotionMto,
++                            false, startFragmentContext, context));
++                }
++                LogApp.e("Request requestGetNotificationDetail: SUCCESS ............");
+ 
++                // decrease notify count on badger
++                NotificationController.decreaseNotifyCount(context);
++                notificationService.notify(NotificationEvent.NOTIFICATION_BADGE_CHANGE, new Bundle());
++            }
++
++            @Override
++            public void onFailure(@NonNull Call<NotificationDetailResponse> call, @NonNull Throwable t) {
++                if (progressPanel != null) progressPanel.hideProgress();
++                LogApp.e(t);
++            }
++        });
++    }
+ }
+Index: app/src/main/java/vn/com/vpbank/client/android/ui/notification/modal/NotificationDetailResponse.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/vn/com/vpbank/client/android/ui/notification/modal/NotificationDetailResponse.java b/app/src/main/java/vn/com/vpbank/client/android/ui/notification/modal/NotificationDetailResponse.java
+new file mode 100644
+--- /dev/null	(date 1726222964465)
++++ b/app/src/main/java/vn/com/vpbank/client/android/ui/notification/modal/NotificationDetailResponse.java	(date 1726222964465)
+@@ -0,0 +1,30 @@
++package vn.com.vpbank.client.android.ui.notification.modal;
++
++import com.google.gson.annotations.SerializedName;
++
++import vn.com.vpbank.client.android.ocbrequest.requestmodal.SerializableClass;
++
++public class NotificationDetailResponse extends SerializableClass {
++
++    @SerializedName("status")
++    private Boolean status;
++
++    @SerializedName("data")
++    private NotificationPromotionMto notificationPromotionMto;
++
++    public Boolean getStatus() {
++        return status;
++    }
++
++    public void setStatus(Boolean status) {
++        this.status = status;
++    }
++
++    public NotificationPromotionMto getNotificationPromotionMto() {
++        return notificationPromotionMto;
++    }
++
++    public void setNotificationPromotionMto(NotificationPromotionMto notificationPromotionMto) {
++        this.notificationPromotionMto = notificationPromotionMto;
++    }
++}
+\ No newline at end of file
+Index: app/src/main/java/vn/com/vpbank/client/android/ui/notification/NotificationPromotionViewFragment.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/vn/com/vpbank/client/android/ui/notification/NotificationPromotionViewFragment.kt b/app/src/main/java/vn/com/vpbank/client/android/ui/notification/NotificationPromotionViewFragment.kt
+--- a/app/src/main/java/vn/com/vpbank/client/android/ui/notification/NotificationPromotionViewFragment.kt	(revision 7f33a9b87766a351f744e24351f0befe4c628184)
++++ b/app/src/main/java/vn/com/vpbank/client/android/ui/notification/NotificationPromotionViewFragment.kt	(date 1726469600591)
+@@ -14,17 +14,21 @@
+ import com.qulix.android.injector.annotations.InjectService
+ import com.vpbank.base.utils.extension.setSafeOnClick
+ import com.vpbank.log_app.LogApp
++import com.vpbank.theme.CConstantColor
++import com.vpbank.theme.CTheme
++import com.vpbank.theme.utils.CStatusBarUtils
+ import vn.com.vpbank.client.android.R
+ import vn.com.vpbank.client.android.UserSession
+ import vn.com.vpbank.client.android.broadcast.NotificationService
+ import vn.com.vpbank.client.android.databinding.NotificationPromotionViewFragmentBinding
+ import vn.com.vpbank.client.android.navigation.StartFragmentContext
++import vn.com.vpbank.client.android.newconcept.home.VPMainHomeActivity
+ import vn.com.vpbank.client.android.ui.HandleDynamicLink
++import vn.com.vpbank.client.android.ui.VPMainFullActivity
+ import vn.com.vpbank.client.android.ui.notification.modal.NotificationPromotionMto
+ import vn.com.vpbank.client.android.ui.support.BackButtonListener
+ import vn.com.vpbank.client.android.ui.support.DateUtils
+ import vn.com.vpbank.client.android.ui.support.FragmentUtils
+-import vn.com.vpbank.client.android.ui.view.AppScreenHeader2
+ import vn.com.vpbank.client.android.ui.view.NestedFragment
+ import vn.com.vpbank.client.android.ui.view.html.HtmlResImageGetter
+ import vn.com.vpbank.client.android.ui.view.html.HtmlTextView
+@@ -36,7 +40,7 @@
+     private val binding by lazy { NotificationPromotionViewFragmentBinding.inflate(layoutInflater) }
+ 
+     private var notificationPromotionMto: NotificationPromotionMto? = null
+-    private var isMain: Boolean? = true
++    private var isMain: Boolean = true
+     private var startFragmentContext: StartFragmentContext? = null
+     private var mainActivityContext: Context? = null
+ //    private val isMain by lazy {
+@@ -66,7 +70,7 @@
+         }
+     }
+ 
+-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
++    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+         return binding.root
+     }
+ 
+@@ -75,11 +79,10 @@
+         XmlResourceInjector.inject(this)
+ 
+         binding.apply {
+-            header.setOnActionClickListener(object : AppScreenHeader2.OnActionClickListener {
+-                override fun onLeftButtonClick() {
+-                    FragmentUtils.remove(this@NotificationPromotionViewFragment)
+-                }
+-            })
++            if (activity is VPMainHomeActivity) {
++                CStatusBarUtils.setColor(activity, CTheme.getInstance().getColor(CConstantColor.g_navbar_bg))
++            }
++
+             txtTitlePromotion.text = notificationPromotionMto?.title
+             txtDate.text = DateUtils.getConvertDate(notificationPromotionMto?.pushedAtFormat, DateUtils.dd_MM_yyyy_HH_mm, DateUtils.dd_MM_yyyy)
+             val urlImage = notificationPromotionMto?.featuredImage
+@@ -142,16 +145,8 @@
+                 btnDirectTop.setSafeOnClick {
+                     logEventNotificationClicked(1, notifyMto)
+ 
+-                    if (isMain == true) {
+-                        activity?.let { activity ->
+-                            val fragments = activity.supportFragmentManager.fragments
+-                            for (item in fragments) {
+-                                if (item is NotificationRootFragment) {
+-                                    FragmentUtils.remove(item)
+-                                    break
+-                                }
+-                            }
+-                        }
++                    if (isMain) {
++                        removeFragmentWhenClickDetailButtonInMain()
+                         NotificationController.handleClickNotifyPromotionInsideMain(
+                             it.context, notificationService, userSession, notifyMto
+                         )
+@@ -179,16 +174,8 @@
+             binding.btnDirectTop.setSafeOnClick {
+                 logEventNotificationClicked(1, notifyMto)
+ 
+-                if (isMain == true) {
+-                    activity?.let { activity ->
+-                        val fragments = activity.supportFragmentManager.fragments
+-                        for (item in fragments) {
+-                            if (item is NotificationRootFragment) {
+-                                FragmentUtils.remove(item)
+-                                break
+-                            }
+-                        }
+-                    }
++                if (isMain) {
++                    removeFragmentWhenClickDetailButtonInMain()
+                     NotificationController.handleClickNotifyPromotionInsideMain(
+                         it.context,
+                         notificationService,
+@@ -218,16 +205,8 @@
+             binding.btnDirectBottom.setSafeOnClick {
+                 logEventNotificationClicked(2, notifyMto)
+ 
+-                if (isMain == true) {
+-                    activity?.let { activity ->
+-                        val fragments = activity.supportFragmentManager.fragments
+-                        for (item in fragments) {
+-                            if (item is NotificationRootFragment) {
+-                                FragmentUtils.remove(item)
+-                                break
+-                            }
+-                        }
+-                    }
++                if (isMain) {
++                    removeFragmentWhenClickDetailButtonInMain()
+                     NotificationController.handleClickNotifyPromotionInsideMain(
+                         it.context,
+                         notificationService,
+@@ -255,16 +234,8 @@
+                      * Sửa click nếu deeplink là bảo hiểm aia và trong màn main thì yêu cầu login
+                      * nếu không phải giữ nguyên như cũ đi vào handle của authen
+                      * */
+-                    if (isMain == true && url?.lowercase()?.contains(DeepLinkConstant.INSURANCE_AIA) == true) {
+-                        activity?.let { activity ->
+-                            val fragments = activity.supportFragmentManager.fragments
+-                            for (item in fragments) {
+-                                if (item is NotificationRootFragment) {
+-                                    FragmentUtils.remove(item)
+-                                    break
+-                                }
+-                            }
+-                        }
++                    if (isMain && url?.lowercase()?.contains(DeepLinkConstant.INSURANCE_AIA) == true) {
++                        removeFragmentWhenClickDetailButtonInMain()
+                         HandleDynamicLink.handleLinkInsideMain(
+                             activity,
+                             context,
+@@ -285,7 +256,28 @@
+         }
+     }
+ 
++    private fun removeFragmentWhenClickDetailButtonInMain() {
++        var isRemove = false
++        activity?.let { activity ->
++            val fragments = activity.supportFragmentManager.fragments
++            for (item in fragments) {
++                if (item is NotificationRootFragment) {
++                    FragmentUtils.remove(item)
++                    isRemove = true
++                    break
++                }
++            }
++        }
++
++        if (!isRemove) {
++            (activity as? VPMainFullActivity)?.finish()
++        }
++    }
++
+     override fun onBackPressed(): Boolean {
++        if (activity is VPMainFullActivity) {
++            activity?.finish()
++        }
+         FragmentUtils.remove(this)
+         return true
+     }
+Index: app/src/main/java/vn/com/vpbank/client/android/newconcept/notification/VPNotificationFragment.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/vn/com/vpbank/client/android/newconcept/notification/VPNotificationFragment.java b/app/src/main/java/vn/com/vpbank/client/android/newconcept/notification/VPNotificationFragment.java
+--- a/app/src/main/java/vn/com/vpbank/client/android/newconcept/notification/VPNotificationFragment.java	(revision 7f33a9b87766a351f744e24351f0befe4c628184)
++++ b/app/src/main/java/vn/com/vpbank/client/android/newconcept/notification/VPNotificationFragment.java	(date 1726222964459)
+@@ -82,7 +82,7 @@
+     public static final String NOTIFICATION = "NOTIFICATION";
+     public static final String BALANCE_CHANGING = "BALANCE_CHANGING";
+     public static final String NOTIFICATION_PROMOTION = "NOTIFICATION_PROMOTION";
+-    private final String PRELOGIN = "PreLogin";
++    public static final String PRELOGIN = "PreLogin";
+     private final int delay = 3000; //milliseconds
+     private final long maxNotiStrangeDevice = 5 * 60 * 1000;
+     boolean isNotificationGone;
+@@ -263,12 +263,13 @@
+ 
+         }
+ 
++        // epic17539-cuongvv: clear notify count khi show màn hình ds notify, HuongNL10 đã confirm
+         if (getActivity() instanceof VPLoginActivity) {
+-            String userId = lastLogin != null ? lastLogin.getId() : "";
+-            boolean isActiveViewFirstNotify = NotificationController.isActiveViewFirstNotify(getContext(), userId);
+-            if (isActiveViewFirstNotify) {
++//            String userId = lastLogin != null ? lastLogin.getId() : "";
++//            boolean isActiveViewFirstNotify = NotificationController.isActiveViewFirstNotify(getContext(), userId);
++//            if (isActiveViewFirstNotify) {
+                 withViewModel(obj -> obj.clearNotificationCount(getContext()));
+-            }
++//            }
+         }
+     }
+ 
+@@ -663,9 +664,9 @@
+                             jwt = PRELOGIN;
+                         }
+                         initView(userId, jwt);
+-                        if (isActiveViewFirst) {
++//                        if (isActiveViewFirst) {
+                             viewModel.clearNotificationCount(getContext());
+-                        }
++//                        }
+                     }
+                 });
+ 
+Index: app/src/main/java/vn/com/vpbank/client/android/ui/VPMainFullActivity.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/vn/com/vpbank/client/android/ui/VPMainFullActivity.java b/app/src/main/java/vn/com/vpbank/client/android/ui/VPMainFullActivity.java
+--- a/app/src/main/java/vn/com/vpbank/client/android/ui/VPMainFullActivity.java	(revision 7f33a9b87766a351f744e24351f0befe4c628184)
++++ b/app/src/main/java/vn/com/vpbank/client/android/ui/VPMainFullActivity.java	(date 1726222964461)
+@@ -171,8 +171,10 @@
+ import vn.com.vpbank.client.android.ui.nickname.NicknameStatusFragment;
+ import vn.com.vpbank.client.android.ui.notification.ChangeBalanceSettingFragment;
+ import vn.com.vpbank.client.android.ui.notification.ListNotifyConfirmFragment;
++import vn.com.vpbank.client.android.ui.notification.NotificationPromotionViewFragment;
+ import vn.com.vpbank.client.android.ui.notification.balancefilter.NotificationDetailBalanceFragment;
+ import vn.com.vpbank.client.android.ui.notification.balancefilter.NotificationStatementFragment;
++import vn.com.vpbank.client.android.ui.notification.modal.NotificationPromotionMto;
+ import vn.com.vpbank.client.android.ui.oob.OOBConfirmFragment;
+ import vn.com.vpbank.client.android.ui.oob.OOBVerifyFragment;
+ import vn.com.vpbank.client.android.ui.operation.card.morecredit.RegMoreCreditCardInputFragment;
+@@ -650,7 +652,15 @@
+             if (NiceAccountLoadScreenFragment.class.getName().equals(fragmentStartName)) {
+                 return NiceAccountLoadScreenFragment.newInstance();
+             }
+-
++            if (NotificationPromotionViewFragment.class.getName().equals(fragmentStartName)) {
++                NotificationPromotionMto notificationPromotionMto = null;
++                if (fragmentStartData != null) {
++                    if (fragmentStartData.get("notificationPromotionMto") instanceof NotificationPromotionMto) {
++                        notificationPromotionMto = (NotificationPromotionMto) fragmentStartData.get("notificationPromotionMto");
++                    }
++                }
++                return NotificationPromotionViewFragment.newInstance(notificationPromotionMto,true, null, this);
++            }
+ //        if (NiceAccountSearchFragment.class.getName().equals(fragmentStartName)) {
+ //            return NiceAccountSearchFragment.instance();
+ //        }
+Index: app/src/main/java/vn/com/vpbank/client/android/newconcept/login/viewmodel/VPLoginViewModel.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/vn/com/vpbank/client/android/newconcept/login/viewmodel/VPLoginViewModel.java b/app/src/main/java/vn/com/vpbank/client/android/newconcept/login/viewmodel/VPLoginViewModel.java
+--- a/app/src/main/java/vn/com/vpbank/client/android/newconcept/login/viewmodel/VPLoginViewModel.java	(revision 7f33a9b87766a351f744e24351f0befe4c628184)
++++ b/app/src/main/java/vn/com/vpbank/client/android/newconcept/login/viewmodel/VPLoginViewModel.java	(date 1726222964458)
+@@ -145,11 +145,15 @@
+     private Boolean mIsSuggestPW = false;
+     private final MutableLiveData<ISResult> mRequestLogin = new MutableLiveData<>();
+     private final MutableLiveData<OperationMetaMto> mOptMetaResponse = new MutableLiveData<>();
++    private final MutableLiveData<LocalUserInfo> mGetLocalUserInfoLiveData = new MutableLiveData<>();
+ 
+     public MutableLiveData<ISResult> getRequestLogin() {
+         return mRequestLogin;
+     }
+ 
++    public MutableLiveData<LocalUserInfo> getGetLocalUserInfoLiveData() {
++        return mGetLocalUserInfoLiveData;
++    }
+ 
+     public MutableLiveData<OperationMetaMto> getOptMetaResponse() {
+         return mOptMetaResponse;
+@@ -292,6 +296,20 @@
+         requestLastLogin(mISShareData.getResultLastLogin()::postValue);
+     }
+ 
++    public void requestUserStorage() {
++        doAsyncWithLifecycle(() -> {
++            if (asyncUserStorage != null) {
++                asyncUserStorage.requestLast(SendListeners.weak(new AbstractStatelessSendListener<>() {
++
++                    @Override
++                    public void onSuccess(VPLoginViewModel reference, LocalUserInfo lastLogin) {
++                        mGetLocalUserInfoLiveData.postValue(lastLogin);
++                    }
++                }, this));
++            }
++        });
++    }
++
+     public boolean isErrorPW(OperationMessageMto message) {
+         return message != null && null != message.getParameterId() && message.getParameterId().equals(LOGIN_MSG);
+     }
+Index: app/src/main/res/layout/vp_activity_main_home.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/res/layout/vp_activity_main_home.xml b/app/src/main/res/layout/vp_activity_main_home.xml
+--- a/app/src/main/res/layout/vp_activity_main_home.xml	(revision 7f33a9b87766a351f744e24351f0befe4c628184)
++++ b/app/src/main/res/layout/vp_activity_main_home.xml	(date 1726458119233)
+@@ -20,5 +20,10 @@
+             app:layout_constraintEnd_toEndOf="parent"
+             app:layout_constraintStart_toStartOf="parent"
+             app:layout_constraintTop_toTopOf="parent" />
++
++        <com.qulix.android.support.ui.ProgressPanel
++            android:id="@+id/progress"
++            android:layout_width="match_parent"
++            android:layout_height="match_parent" />
+     </vn.com.vpbank.client.android.ui.themes.views.UIUXRelativeLayout>
+ </layout>
+\ No newline at end of file
+Index: app/src/main/java/vn/com/vpbank/client/android/fcm/ArgumentText.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/vn/com/vpbank/client/android/fcm/ArgumentText.java b/app/src/main/java/vn/com/vpbank/client/android/fcm/ArgumentText.java
+--- a/app/src/main/java/vn/com/vpbank/client/android/fcm/ArgumentText.java	(revision 7f33a9b87766a351f744e24351f0befe4c628184)
++++ b/app/src/main/java/vn/com/vpbank/client/android/fcm/ArgumentText.java	(date 1726222964450)
+@@ -4,4 +4,5 @@
+     public static final String TRUSTED_DEVICE = "TRUSTED_DEVICE";
+     public static final String EWALLET_DEVICE = "OutOfBand";
+     public static final String DEVICE_ID = "deviceId";
++    public static final String NOTIFY_ID = "NOTIFY_ID";
+ }
+Index: app/build.gradle
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/build.gradle b/app/build.gradle
+--- a/app/build.gradle	(revision 7f33a9b87766a351f744e24351f0befe4c628184)
++++ b/app/build.gradle	(date 1726222964450)
+@@ -225,8 +225,8 @@
+     dataBinding {
+         enabled = true
+     }
+-    dynamicFeatures = [ ":card_module"]
+-    assetPacks = [":on_demand_my_qr"]
++//    dynamicFeatures = [ ":card_module"]
++//    assetPacks = [":on_demand_my_qr"]
+ 
+     configurations {
+         all*.exclude group: 'com.google.guava', module: 'listenablefuture'
+Index: settings.gradle
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/settings.gradle b/settings.gradle
+--- a/settings.gradle	(revision 7f33a9b87766a351f744e24351f0befe4c628184)
++++ b/settings.gradle	(date 1726222964467)
+@@ -7,9 +7,9 @@
+ include ':view_common'
+ include ':base_apps'
+ include ':smart_otp'
+-include ':card_module'
++//include ':card_module'
+ //include ':lucky_money'
+-include ':on_demand_my_qr'
++//include ':on_demand_my_qr'
+ 
+ //include ':game_neo'
+ 
+Index: app/src/main/java/vn/com/vpbank/client/android/newconcept/deeplink/worker/VPURLDeepLinkWorker.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/vn/com/vpbank/client/android/newconcept/deeplink/worker/VPURLDeepLinkWorker.kt b/app/src/main/java/vn/com/vpbank/client/android/newconcept/deeplink/worker/VPURLDeepLinkWorker.kt
+--- a/app/src/main/java/vn/com/vpbank/client/android/newconcept/deeplink/worker/VPURLDeepLinkWorker.kt	(revision 7f33a9b87766a351f744e24351f0befe4c628184)
++++ b/app/src/main/java/vn/com/vpbank/client/android/newconcept/deeplink/worker/VPURLDeepLinkWorker.kt	(date 1726222964455)
+@@ -75,6 +75,7 @@
+         LogApp.e("handleLinkInsideAuthN")
+         LogApp.e(urlFull)
+ 
++        // tạo input data để cho worker từng S xử lý
+         var authNHandleData: VPURLAuthNHandleData? = null
+         try {
+             // parse url data from raw url
+@@ -112,8 +113,8 @@
+ 
+         // call worker to handle authN deeplink data
+         var isResolve = false
+-        for (i in 0 until workers.size) {
+-            if (workers[i].invoke(authNHandleData)) {
++        for (sWorker in workers) {
++            if (sWorker.invoke(authNHandleData)) {
+                 isResolve = true
+                 break
+             }
+Index: app/src/main/java/vn/com/vpbank/client/android/newconcept/deeplink/VPDeepLinkData.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/vn/com/vpbank/client/android/newconcept/deeplink/VPDeepLinkData.kt b/app/src/main/java/vn/com/vpbank/client/android/newconcept/deeplink/VPDeepLinkData.kt
+--- a/app/src/main/java/vn/com/vpbank/client/android/newconcept/deeplink/VPDeepLinkData.kt	(revision 7f33a9b87766a351f744e24351f0befe4c628184)
++++ b/app/src/main/java/vn/com/vpbank/client/android/newconcept/deeplink/VPDeepLinkData.kt	(date 1726469026185)
+@@ -5,10 +5,14 @@
+ import androidx.fragment.app.FragmentActivity
+ import vn.com.vpbank.client.android.UserSession
+ import vn.com.vpbank.client.android.broadcast.NotificationService
+-import vn.com.vpbank.client.android.navigation.StartFragmentContext
+ 
+ sealed class VPDeepLinkData(val pendingDeepLink: String, var deeplinkIntent: Intent? = null) {
+ 
++    override fun toString(): String {
++        return "${this.javaClass.simpleName}: deepLink=$pendingDeepLink; intent=$deeplinkIntent"
++//        return super.toString()
++    }
++
+     // short cuts
+     class VPShortCutsDeepLink(pendingDeepLink: String) : VPDeepLinkData(pendingDeepLink)
+ 
+@@ -20,6 +24,10 @@
+             const val PARTNER_DEEPLINK_ZALO_PAY = 0x01
+             const val PARTNER_DEEPLINK_ZALO = 0x02
+         }
++
++        override fun toString(): String {
++            return "${super.toString()}; partner=$partner"
++        }
+     }
+ 
+     // all deeplink with url type
+@@ -39,11 +47,16 @@
+         val isNavigationToNotificationGroup: Boolean,
+         val navigationToNotificationType: String,
+         deeplinkIntent: Intent
+-    ) : VPURLDeepLink("", deeplinkIntent) {
++    ) : VPDeepLinkData("", deeplinkIntent) {
+         var deviceId: String = "" // device ID for case trust device
++
++        override fun toString(): String {
++            return "${super.toString()}; isNavigationToNotificationGroup=$isNavigationToNotificationGroup; navigationToNotificationType=$navigationToNotificationType; deviceId=$deviceId"
++        }
+     }
+ }
+ 
++// box chứa data input cho case xử lý deeplink URL
+ data class VPURLAuthNHandleData(val activity: FragmentActivity) {
+     var notificationService: NotificationService? = null
+     var userSession: UserSession? = null
+Index: app/src/main/java/vn/com/vpbank/client/android/newconcept/deeplink/VPDeepLinkWorkerData.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/vn/com/vpbank/client/android/newconcept/deeplink/VPDeepLinkWorkerData.kt b/app/src/main/java/vn/com/vpbank/client/android/newconcept/deeplink/VPDeepLinkWorkerData.kt
+--- a/app/src/main/java/vn/com/vpbank/client/android/newconcept/deeplink/VPDeepLinkWorkerData.kt	(revision 7f33a9b87766a351f744e24351f0befe4c628184)
++++ b/app/src/main/java/vn/com/vpbank/client/android/newconcept/deeplink/VPDeepLinkWorkerData.kt	(date 1726469058095)
+@@ -11,12 +11,12 @@
+     var notificationService: NotificationService? = null
+ }
+ 
+-// input data cho case xử lý deeplink TRƯỚC khi login
++// input data cho worker, case xử lý deeplink TRƯỚC khi login
+ class VPDeepLinkWorkerBeforeLogin(activity: FragmentActivity, deepLinkData: VPDeepLinkData?) :
+     VPDeepLinkWorkerData(activity, deepLinkData) {
+ }
+ 
+-// input data cho case xử lý deeplink SAU khi login
++// input data cho worker, case xử lý deeplink SAU khi login
+ class VPDeepLinkWorkerAfterLogin(activity: FragmentActivity, deepLinkData: VPDeepLinkData? = null) :
+     VPDeepLinkWorkerData(activity, deepLinkData) {
+     var userSession: UserSession? = null
+@@ -25,5 +25,5 @@
+     var isChatBot: Boolean = false
+ }
+ 
+-// xử lý deeplink theo từng S
++// input data xử lý deeplink theo từng S
+ typealias AuthNDeepLinkInvoke = (VPURLAuthNHandleData) -> Boolean
+\ No newline at end of file
+Index: app/src/main/java/vn/com/vpbank/client/android/newconcept/home/fragments/VPMainHomeFragment.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/vn/com/vpbank/client/android/newconcept/home/fragments/VPMainHomeFragment.java b/app/src/main/java/vn/com/vpbank/client/android/newconcept/home/fragments/VPMainHomeFragment.java
+--- a/app/src/main/java/vn/com/vpbank/client/android/newconcept/home/fragments/VPMainHomeFragment.java	(revision 7f33a9b87766a351f744e24351f0befe4c628184)
++++ b/app/src/main/java/vn/com/vpbank/client/android/newconcept/home/fragments/VPMainHomeFragment.java	(date 1726458119224)
+@@ -150,13 +150,7 @@
+             binding.vpNbMHView.setViewListener(new VPMainNavBarView.ViewListener() {
+                 @Override
+                 public void onNavBtnClick(VPMainNavBarView.NavType navType) {
+-                    binding.vpFragmentContainer.setTranslationZ(navType == VPMainNavBarView.NavType.HOME ? 1 : 0);
+-                    if (navType == VPMainNavBarView.NavType.QR) {
+-                        onQrClick();
+-                    } else {
+-                        stateVPMainHomeFrg.setCurrentNavType(navType);
+-                        binding.vpNbMHView.setScreen(stateVPMainHomeFrg.getScreenNavString());
+-                    }
++                    handleNavButtonClick(navType);
+                 }
+             });
+ //            binding.vpViewScrollToTop.setTextVersion(getString(R.string.version_prelogin, properties.getApplicationVersion()));
+@@ -181,6 +175,18 @@
+         });
+     }
+ 
++    private void handleNavButtonClick(VPMainNavBarView.NavType navType) {
++        withAll((binding, vm) -> {
++            binding.vpFragmentContainer.setTranslationZ(navType == VPMainNavBarView.NavType.HOME ? 1 : 0);
++            if (navType == VPMainNavBarView.NavType.QR) {
++                onQrClick();
++            } else {
++                stateVPMainHomeFrg.setCurrentNavType(navType);
++                binding.vpNbMHView.setScreen(stateVPMainHomeFrg.getScreenNavString());
++            }
++        });
++    }
++
+     @Override
+     protected void initObserver(@NonNull FragmentVpMainHomeBinding view, @Nullable VPMainHomeFragmentViewModel viewModel) {
+         with(viewModel.getResultNotificationEvent(), res -> res.observe(getViewLifecycleOwner(), this::onReceivedEvent));
+@@ -291,6 +297,10 @@
+             });
+             vm.getAlphaBlurView().observe(getViewLifecycleOwner(), vpAnimBlurHomeView::doAnim);
+         });
++
++        withAll(getViewBinding(), mainActivityVm, (binding, activityVM) -> {
++            activityVM.getSelectHomeNavBarLiveData().observe(getViewLifecycleOwner(), this::handleNavButtonClick);
++        });
+     }
+ 
+     private void onReceivedEvent(NotificationEvent event) {
+Index: app/src/main/java/vn/com/vpbank/client/android/newconcept/deeplink/VPHandleDynamicLink.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/vn/com/vpbank/client/android/newconcept/deeplink/VPHandleDynamicLink.kt b/app/src/main/java/vn/com/vpbank/client/android/newconcept/deeplink/VPHandleDynamicLink.kt
+--- a/app/src/main/java/vn/com/vpbank/client/android/newconcept/deeplink/VPHandleDynamicLink.kt	(revision 7f33a9b87766a351f744e24351f0befe4c628184)
++++ b/app/src/main/java/vn/com/vpbank/client/android/newconcept/deeplink/VPHandleDynamicLink.kt	(date 1726469116969)
+@@ -231,7 +231,7 @@
+         }
+ 
+         // callback extra intent
+-        LogApp.d("parse intent to deeplink: deepLinkData=${deepLinkData?.javaClass?.simpleName}; extraIntent=$extraIntent")
++        LogApp.d("parse intent to deeplink: deepLinkData=$deepLinkData; extraIntent=$extraIntent")
+         return extraIntent to deepLinkData
+     }
+ 
+@@ -243,8 +243,9 @@
+         is VPDeepLinkData.VPShortCutsDeepLink -> VPShortCutsDeepLinkWorker()
+         is VPDeepLinkData.VPAdjustDeepLink -> VPAdjustDeepLinkWorker()
+         is VPDeepLinkData.VPPartnerDeepLink -> VPPartnerDeepLinkWorker()
+-        is VPDeepLinkData.VPFirebaseDeepLink -> VPFirebaseDeepLinkWorker() // ưu tiên check trước URL deeplink
++        is VPDeepLinkData.VPFirebaseDeepLink -> VPFirebaseDeepLinkWorker() // Note: ưu tiên return trước URL deeplink
+         is VPDeepLinkData.VPURLDeepLink -> VPURLDeepLinkWorker()
++//        is VPDeepLinkData.VPNavigateDeepLink -> xxx // Note: type navigate notification thì sẽ xử lý trên activity, nên không cần worker
+         else -> null
+     }
+ 
+Index: app/src/main/java/vn/com/vpbank/client/android/fcm/MyFirebaseMessagingService.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/vn/com/vpbank/client/android/fcm/MyFirebaseMessagingService.java b/app/src/main/java/vn/com/vpbank/client/android/fcm/MyFirebaseMessagingService.java
+--- a/app/src/main/java/vn/com/vpbank/client/android/fcm/MyFirebaseMessagingService.java	(revision 7f33a9b87766a351f744e24351f0befe4c628184)
++++ b/app/src/main/java/vn/com/vpbank/client/android/fcm/MyFirebaseMessagingService.java	(date 1726222964451)
+@@ -74,12 +74,13 @@
+         String type = map.containsKey("type") ? String.valueOf(map.get("type")) : "";
+         String body = map.containsKey("body") ? String.valueOf(map.get("body")) : "Quý khách có thông báo mới";
+         String channelType = map.containsKey("channelType") ? String.valueOf(map.get("channelType")) : "";
++        String notifyID = map.containsKey("id") ? String.valueOf(map.get("id")) : "";
+         if ("BALANCE_CHANGING".equals(type) || "NOTIFICATION".equals(type) || "PROMOTION".equals(type) || "DEBT_REMIND".equals(type) || "SYSTEM_NOTI".equals(type) || ArgumentText.TRUSTED_DEVICE.equals(type)) {
+             //nếu là noti biến động số dư, noti all, promotion
+             NotificationController.increaseNotifyCount(this);
+             notificationService.notify(NotificationEvent.NOTIFICATION_BADGE_CHANGE, new Bundle());
+ 
+-            showNotification(this, map, title, body, type, channelType);
++            showNotification(this, map, title, body, type, channelType, notifyID);
+ //            if ("BALANCE_CHANGING".equals(type))
+ //                notificationService.notify(NotificationEvent.NOTIFICATION_DATA_CHANGE, new Bundle());
+         } else {
+@@ -135,7 +136,7 @@
+         return false;
+     }
+ 
+-    private void showNotification(Context mContext, Map<String, String> data, String title, String body, String type, String channelType) {
++    private void showNotification(Context mContext, Map<String, String> data, String title, String body, String type, String channelType, final String notifyID) {
+         NotificationManager mNotificationManager;
+ 
+         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(mContext.getApplicationContext(), "Channel_Firebase");
+@@ -183,6 +184,12 @@
+         } else {
+             putDataNavigationGroup(ii, type);
+         }
++
++        // add notify ID
++        if (!TextUtils.isEmpty(notifyID)) {
++            ii.putExtra(ArgumentText.NOTIFY_ID, notifyID);
++        }
++
+         int flags = PendingIntent.FLAG_UPDATE_CURRENT;
+ //        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+ //            flags |= PendingIntent.FLAG_IMMUTABLE;
+Index: app/src/main/res/layout/notification_promotion_view_fragment.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/res/layout/notification_promotion_view_fragment.xml b/app/src/main/res/layout/notification_promotion_view_fragment.xml
+--- a/app/src/main/res/layout/notification_promotion_view_fragment.xml	(revision 7f33a9b87766a351f744e24351f0befe4c628184)
++++ b/app/src/main/res/layout/notification_promotion_view_fragment.xml	(date 1726460700092)
+@@ -10,6 +10,7 @@
+         android:focusable="true"
+         android:focusableInTouchMode="true"
+         android:orientation="vertical"
++        android:fitsSystemWindows="true"
+         app:bg_solid_color_name="g_main_bg_2">
+ 
+         <vn.com.vpbank.client.android.ui.view.AppScreenHeader2
+@@ -88,6 +89,7 @@
+             android:layout_height="wrap_content"
+             android:layout_marginHorizontal="@dimen/padding_16"
+             android:layout_marginTop="@dimen/padding_8"
++            android:layout_marginBottom="@dimen/padding_8"
+             android:clickable="true"
+             android:focusable="true"
+             android:focusableInTouchMode="true"
+@@ -101,6 +103,7 @@
+             android:layout_height="wrap_content"
+             android:layout_marginHorizontal="@dimen/padding_16"
+             android:layout_marginTop="@dimen/padding_8"
++            android:layout_marginBottom="@dimen/padding_8"
+             android:clickable="true"
+             android:focusable="true"
+             android:focusableInTouchMode="true"
+Index: app/src/main/java/vn/com/vpbank/client/android/newconcept/login/VPLoginActivity.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/vn/com/vpbank/client/android/newconcept/login/VPLoginActivity.java b/app/src/main/java/vn/com/vpbank/client/android/newconcept/login/VPLoginActivity.java
+--- a/app/src/main/java/vn/com/vpbank/client/android/newconcept/login/VPLoginActivity.java	(revision 7f33a9b87766a351f744e24351f0befe4c628184)
++++ b/app/src/main/java/vn/com/vpbank/client/android/newconcept/login/VPLoginActivity.java	(date 1726461389562)
+@@ -59,6 +59,7 @@
+ import vn.com.vpbank.client.android.broadcast.NotificationEvent;
+ import vn.com.vpbank.client.android.broadcast.NotificationService;
+ import vn.com.vpbank.client.android.databinding.VpActivityLoginBinding;
++import vn.com.vpbank.client.android.fcm.ArgumentText;
+ import vn.com.vpbank.client.android.navigation.DefaultStartFragmentContext;
+ import vn.com.vpbank.client.android.newconcept.base.VPBaseSupportActivity;
+ import vn.com.vpbank.client.android.newconcept.deeplink.VPDeepLinkConstant;
+@@ -68,6 +69,7 @@
+ import vn.com.vpbank.client.android.newconcept.login.component.ISShareData;
+ import vn.com.vpbank.client.android.newconcept.login.helper.ISNavHelper;
+ import vn.com.vpbank.client.android.newconcept.login.viewmodel.VPLoginViewModel;
++import vn.com.vpbank.client.android.newconcept.notification.VPNotificationFragment;
+ import vn.com.vpbank.client.android.newconcept.operation.ISResult;
+ import vn.com.vpbank.client.android.screenhelpler.ScreenChangeHelper;
+ import vn.com.vpbank.client.android.ui.HandleDynamicLink;
+@@ -76,6 +78,7 @@
+ import vn.com.vpbank.client.android.ui.login.FirebaseCall;
+ import vn.com.vpbank.client.android.ui.login.ResultAppAction;
+ import vn.com.vpbank.client.android.ui.main_home.search.SearchRemoteData;
++import vn.com.vpbank.client.android.ui.notification.NotificationController;
+ import vn.com.vpbank.client.android.ui.notification.NotificationLocalData;
+ import vn.com.vpbank.client.android.ui.operation.login.MainScreenIntegratedStageBuilderProvider;
+ import vn.com.vpbank.client.android.ui.operation.utils.ActivityStateHandler;
+@@ -115,6 +118,7 @@
+     private IdleReceiver mIdleReceiver;
+     private Language language;
+     private NavGraph mLoginNavGraph = null;
++    private String notifyID = null;
+     private final CancellableMessageDisplayer mMessageDisplay = new CancellableMessageDisplayer() {
+         @Override
+         public void cancel() {
+@@ -322,6 +326,14 @@
+         }));
+         /*[13867-14274][NC-Regular Login] - start operation at regular login for actions defined from IS - By NamNH76 07/03/2024 End*/
+         with(viewModel.getResultNotificationEvent(), res -> res.observe(this, this::onReceivedEvent));
++        observeSingle(viewModel.getGetLocalUserInfoLiveData(), localUserInfo -> with(getViewBinding(), binding -> {
++            String jwt = NotificationController.getJwtFirebase(this, localUserInfo.getId());
++            if (TextUtils.isEmpty(jwt)) {
++                jwt = VPNotificationFragment.PRELOGIN;
++            }
++
++            NotificationController.requestGetNotificationDetail(this, null, notificationService, binding.progress, notifyID, jwt);
++        }));
+     }
+ 
+     @Override
+@@ -332,6 +344,8 @@
+     }
+ 
+     private void handleDeepLinkDataBeforeLogin(Intent mainIntent) {
++        if (mainIntent == null) return;
++
+         // case share extension QR
+         if (mainIntent.hasExtra(VPDeepLinkConstant.SHARE_QR_EXTENSION_KEY)) {
+             String shareQRUri = mainIntent.getStringExtra(VPDeepLinkConstant.SHARE_QR_EXTENSION_KEY);
+@@ -344,15 +358,26 @@
+         // bỏ qua nếu không có deeplink data
+         if (deepLinkData == null) return;
+ 
+-        // nếu type deeplink là navigate
++        // riêng type deeplink là navigate notification group thì xử lý ở activity luôn
+         if (deepLinkData instanceof VPDeepLinkData.VPNavigateDeepLink) {
+             VPDeepLinkData.VPNavigateDeepLink navigateDeepLink = (VPDeepLinkData.VPNavigateDeepLink) deepLinkData;
++            notifyID = mainIntent.getStringExtra(ArgumentText.NOTIFY_ID);
++            mainIntent.removeExtra(ArgumentText.NOTIFY_ID);
+ 
+             if (TextUtils.isEmpty(navigateDeepLink.getDeviceId())) {
+                 // nếu không phải case trust device => navigate notification group
+                 if (navigateDeepLink.isNavigationToNotificationGroup()) {
+-                    getNavController().navigate(R.id.action_replace_to_fragment_notification);
++                    if (TextUtils.isEmpty(notifyID)) {
++                        getNavController().navigate(R.id.action_replace_to_fragment_notification);
++                    }
+                 }
++
++                // nếu có notifyID thì request get notify detail
++                if (!TextUtils.isEmpty(notifyID)) {
++                    if (getViewModel() != null) {
++                        getViewModel().requestUserStorage();
++                    }
++                }
+             } else {
+                 // case trust device
+                 LoginRedirectScreenController.setRedirectScreenTypeAndNavigateToLoginAction(RedirectScreenType.TRUSTED_DEVICE,
+Index: app/src/main/java/vn/com/vpbank/client/android/newconcept/home/viewmodel/VPHomeActivityViewModel.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/vn/com/vpbank/client/android/newconcept/home/viewmodel/VPHomeActivityViewModel.kt b/app/src/main/java/vn/com/vpbank/client/android/newconcept/home/viewmodel/VPHomeActivityViewModel.kt
+--- a/app/src/main/java/vn/com/vpbank/client/android/newconcept/home/viewmodel/VPHomeActivityViewModel.kt	(revision 7f33a9b87766a351f744e24351f0befe4c628184)
++++ b/app/src/main/java/vn/com/vpbank/client/android/newconcept/home/viewmodel/VPHomeActivityViewModel.kt	(date 1726458119229)
+@@ -2,17 +2,20 @@
+ 
+ import android.app.Application
+ import com.qulix.android.injector.XmlResourceInjector
++import com.vpbank.base.utils.support.SingleLiveEvent
+ import dagger.hilt.android.lifecycle.HiltViewModel
+ import vn.com.vpbank.client.android.newconcept.base.VPBaseSupportViewModel
++import vn.com.vpbank.client.android.newconcept.component.VPMainNavBarView
+ import vn.com.vpbank.client.android.newconcept.interfaces.VPListener
+ import javax.inject.Inject
+ 
+ @HiltViewModel
+-class VPHomeActivityViewModel @Inject constructor(private val app: Application) :
+-    VPBaseSupportViewModel() {
++class VPHomeActivityViewModel @Inject constructor(private val app: Application) : VPBaseSupportViewModel() {
++    private val selectHomeNavBarLiveData = SingleLiveEvent<VPMainNavBarView.NavType>()
+ 
+     init {
+         XmlResourceInjector.inject(this)
+     }
+ 
++    fun getSelectHomeNavBarLiveData() = selectHomeNavBarLiveData
+ }
+\ No newline at end of file
+Index: app/src/main/java/vn/com/vpbank/client/android/newconcept/home/VPMainHomeActivity.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/vn/com/vpbank/client/android/newconcept/home/VPMainHomeActivity.java b/app/src/main/java/vn/com/vpbank/client/android/newconcept/home/VPMainHomeActivity.java
+--- a/app/src/main/java/vn/com/vpbank/client/android/newconcept/home/VPMainHomeActivity.java	(revision 7f33a9b87766a351f744e24351f0befe4c628184)
++++ b/app/src/main/java/vn/com/vpbank/client/android/newconcept/home/VPMainHomeActivity.java	(date 1726469486463)
+@@ -22,6 +22,7 @@
+ import com.qulix.android.injector.XmlResourceInjector;
+ import com.qulix.android.injector.annotations.InjectApplication;
+ import com.qulix.android.injector.annotations.InjectService;
++import com.qulix.android.support.ui.ProgressPanel;
+ import com.vpbank.base.utils.VPUiUtils;
+ 
+ import java.util.List;
+@@ -37,6 +38,7 @@
+ import vn.com.vpbank.client.android.fcm.ArgumentText;
+ import vn.com.vpbank.client.android.navigation.DefaultStartFragmentContext;
+ import vn.com.vpbank.client.android.newconcept.base.VPBaseSupportActivity;
++import vn.com.vpbank.client.android.newconcept.component.VPMainNavBarView;
+ import vn.com.vpbank.client.android.newconcept.deeplink.VPDeepLinkConstant;
+ import vn.com.vpbank.client.android.newconcept.deeplink.VPDeepLinkData;
+ import vn.com.vpbank.client.android.newconcept.deeplink.VPDeepLinkWorkerAfterLogin;
+@@ -49,6 +51,7 @@
+ import vn.com.vpbank.client.android.ui.dynamic_modules.InstallModuleRepository;
+ import vn.com.vpbank.client.android.ui.dynamic_modules.InstallModuleResultObserver;
+ import vn.com.vpbank.client.android.ui.login.ResultAppAction;
++import vn.com.vpbank.client.android.ui.notification.NotificationController;
+ import vn.com.vpbank.client.android.ui.support.BackButtonListener;
+ import vn.com.vpbank.client.android.ui.support.UiUtils;
+ 
+@@ -139,7 +142,7 @@
+             return;
+         }
+ 
+-        // other deeplink case
++        // input data để xử lý deeplink
+         VPDeepLinkWorkerAfterLogin workerData = new VPDeepLinkWorkerAfterLogin(this, null);
+         workerData.setNotificationService(notificationService);
+         workerData.setUserSession(userSession);
+@@ -147,18 +150,36 @@
+         workerData.setResultLauncher(resultLauncher);
+         workerData.setChatBot(false);
+ 
++        // xử lý deeplink
+         VPDeepLinkData deepLinkData = VPHandleDynamicLink.g().handleDeepLinkAfterLogin(workerData, authIntent);
+ 
+-        // bỏ qua nếu không có deeplink data
++        // bỏ qua nếu detect KHÔNG CÓ deeplink data
+         if (deepLinkData == null) return;
+ 
+-        // nếu type deeplink là navigate
++        // riêng type deeplink là navigate notification group thì xử lý ở activity luôn
+         if (deepLinkData instanceof VPDeepLinkData.VPNavigateDeepLink) {
+             VPDeepLinkData.VPNavigateDeepLink navigateDeepLink = (VPDeepLinkData.VPNavigateDeepLink) deepLinkData;
++            String notifyID = authIntent.getStringExtra(ArgumentText.NOTIFY_ID);
++            authIntent.removeExtra(ArgumentText.NOTIFY_ID);
+ 
+             if (TextUtils.isEmpty(navigateDeepLink.getDeviceId())) {
+-                // nếu không phải case trust device => navigate notification group
+-//                changeToNotificationGroup(navigateDeepLink.isNavigationToNotificationGroup());
++                if (navigateDeepLink.isNavigationToNotificationGroup()) {
++                    if (TextUtils.isEmpty(notifyID)) {
++                        // nếu không phải case trust device => navigate notification group
++                        if (getViewModel() != null) {
++                            getViewModel().getSelectHomeNavBarLiveData().postValue(VPMainNavBarView.NavType.NOTIFICATION);
++                        }
++                    }
++                }
++
++                if (!TextUtils.isEmpty(notifyID)) {
++                    String jwt = (userSession != null && userSession.getUserInfo() != null && userSession.getUserInfo().getJwtFirebase() != null) ? userSession.getUserInfo().getJwtFirebase() : "";
++                    ProgressPanel progressPanel = null;
++                    if (getViewBinding() != null) {
++                        progressPanel = getViewBinding().progress;
++                    }
++                    NotificationController.requestGetNotificationDetail(VPMainHomeActivity.this, new DefaultStartFragmentContext(getSupportFragmentManager()), notificationService, progressPanel, notifyID, jwt);
++                }
+             } else {
+                 // case trust device
+                 goStrangeDevice(navigateDeepLink.getDeviceId());
