@@ -1,0 +1,110 @@
+Subject: [PATCH] epic18608: điều hướng màn hình SMS OTP cho user simply/eKYC khi định danh/thu thập
+---
+Index: app/src/main/java/vn/com/vpbank/client/android/ui/otp/OTPHelper.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/vn/com/vpbank/client/android/ui/otp/OTPHelper.java b/app/src/main/java/vn/com/vpbank/client/android/ui/otp/OTPHelper.java
+--- a/app/src/main/java/vn/com/vpbank/client/android/ui/otp/OTPHelper.java	(revision 6f8e1f111586d346fadf2eb267e90e6ff581e22a)
++++ b/app/src/main/java/vn/com/vpbank/client/android/ui/otp/OTPHelper.java	(date 1727065494894)
+@@ -4,6 +4,7 @@
+     public static final int OTP_FOR_NEO = 0x01;
+     public static final int OTP_FOR_CARD_APP = 0x02;
+     public static final int OTP_FOR_REVOKE = 0x03;
++    public static final int OTP_FOR_2345_SPECIAL_CASE = 0x04; // 2024Sep23 - epic18608 - cuongvv6: với user thuộc gói Simply/eKYC và đang định danh/thu thập face thì force show SMS OTP
+ 
+     private static final OTPHelper _INSTANCE = new OTPHelper();
+ 
+@@ -33,6 +34,10 @@
+         return isOTPFor(OTP_FOR_REVOKE);
+     }
+ 
++    public boolean isOTPFor2345SpecialCase() {
++        return isOTPFor(OTP_FOR_2345_SPECIAL_CASE);
++    }
++
+     public boolean isOTPFor(int forWhat) {
+         return otpForWhat == forWhat;
+     }
+Index: app/src/main/java/vn/com/vpbank/client/android/ui/otp/OTPCodeActivity.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/vn/com/vpbank/client/android/ui/otp/OTPCodeActivity.java b/app/src/main/java/vn/com/vpbank/client/android/ui/otp/OTPCodeActivity.java
+--- a/app/src/main/java/vn/com/vpbank/client/android/ui/otp/OTPCodeActivity.java	(revision 6f8e1f111586d346fadf2eb267e90e6ff581e22a)
++++ b/app/src/main/java/vn/com/vpbank/client/android/ui/otp/OTPCodeActivity.java	(date 1727065494886)
+@@ -309,9 +309,9 @@
+             mappingType = mfaDtoRequestResponse.getMfaDtos().get(0).getType().toString();
+ 
+             // Neu luong revoke, mac dinh la sms otp
+-            if (OTPHelper.g().isOTPForRevoke()) {
+-                otpCodeFragment = OTPCodeSMSFragment.instance();
+-                FragmentUtils.addChild(getSupportFragmentManager(), R.id.layoutContainer, (OTPCodeSMSFragment) otpCodeFragment);
++            // 2024Sep23 - epic18608 - cuongvv6: với user thuộc gói Simply/eKYC và đang định danh/thu thập face thì force show SMS OTP
++            if (OTPHelper.g().isOTPForRevoke() || OTPHelper.g().isOTPFor2345SpecialCase()) {
++                showSMSOtpScreen();
+                 return;
+             }
+ 
+@@ -373,14 +373,18 @@
+                     }
+                 });
+             } else {
+-                otpCodeFragment = OTPCodeSMSFragment.instance();
+-                FragmentUtils.addChild(getSupportFragmentManager(), R.id.layoutContainer, (OTPCodeSMSFragment) otpCodeFragment);
++                showSMSOtpScreen();
+             }
+         } catch (Exception e) {
+             LogApp.e(e.getMessage());
+         }
+     }
+ 
++    private void showSMSOtpScreen() {
++        otpCodeFragment = OTPCodeSMSFragment.instance();
++        FragmentUtils.addChild(getSupportFragmentManager(), R.id.layoutContainer, (OTPCodeSMSFragment) otpCodeFragment);
++    }
++
+     private void callVerifyOtp(String otp) {
+         UiUtils.hideKeyboard(this);
+         if (!Utils.isBlank(sessionId)) {
+Index: app/src/main/java/vn/com/vpbank/client/android/ui/authentication/identityKyc/ScanConfirmInfoCakeFragment.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/vn/com/vpbank/client/android/ui/authentication/identityKyc/ScanConfirmInfoCakeFragment.java b/app/src/main/java/vn/com/vpbank/client/android/ui/authentication/identityKyc/ScanConfirmInfoCakeFragment.java
+--- a/app/src/main/java/vn/com/vpbank/client/android/ui/authentication/identityKyc/ScanConfirmInfoCakeFragment.java	(revision 6f8e1f111586d346fadf2eb267e90e6ff581e22a)
++++ b/app/src/main/java/vn/com/vpbank/client/android/ui/authentication/identityKyc/ScanConfirmInfoCakeFragment.java	(date 1727065234720)
+@@ -47,6 +47,7 @@
+ import vn.com.vpbank.client.android.ocbrequest.requestmodal.fa2345.VerifyRegisterFaceResponse;
+ import vn.com.vpbank.client.android.ui.identity_chip.FireBaseCCCDUtils;
+ import vn.com.vpbank.client.android.ui.otp.OTPCodeAction;
++import vn.com.vpbank.client.android.ui.otp.OTPHelper;
+ import vn.com.vpbank.client.android.ui.support.DateUtils;
+ import vn.com.vpbank.client.android.ui.support.Dialogs;
+ import vn.com.vpbank.client.android.ui.support.send.SendListeners;
+@@ -54,6 +55,7 @@
+ import vn.com.vpbank.client.android.ui.view.tnc.TnCBuilder;
+ import vn.com.vpbank.client.android.ui.view.tnc.TnCFragment;
+ import vn.com.vpbank.client.android.ui.view.tnc.TnCType;
++import vn.com.vpbank.client.android.utils.UserPackageUtils;
+ import vn.com.vpbank.client.android.utils.VPBUtils;
+ import vn.com.vpbank.client.android.utils.firebase.FirebaseEvent;
+ import vn.com.vpbank.client.android.utils.insider.InsiderEvents;
+@@ -156,7 +158,13 @@
+         });
+ 
+         // otp confirm
+-        otpCodeAction = new OTPCodeAction();
++        // 2024Sep23 - epic18608 - cuongvv6: điều hướng màn hình xác thực SMS OTP cho gói eKYC/Simply luồng thu thập/định danh sau login
++        if ((getShareViewModel().isCaseDinhDanh() || getShareViewModel().isCaseThuThap())
++                && (UserPackageUtils.isSimply(userSession) || UserPackageUtils.isEkyc(userSession))) {
++            otpCodeAction = new OTPCodeAction(OTPHelper.OTP_FOR_2345_SPECIAL_CASE);
++        } else {
++            otpCodeAction = new OTPCodeAction();
++        }
+         otpCodeAction.onSuccess(new SyncStateAction());
+         otpCodeAction.onError(new ErrorStateAction());
+         otpCodeAction.onCancel(new CancelStateAction());
