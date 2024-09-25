@@ -1,0 +1,348 @@
+Subject: [PATCH] set margin top bottom for overlay
+---
+Index: qrscanner/src/main/java/com/vpbank/qrscanner/VPBQRScannerView.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/qrscanner/src/main/java/com/vpbank/qrscanner/VPBQRScannerView.kt b/qrscanner/src/main/java/com/vpbank/qrscanner/VPBQRScannerView.kt
+--- a/qrscanner/src/main/java/com/vpbank/qrscanner/VPBQRScannerView.kt	(revision 4b306aab4376749fb6cbcae486c184fce9c07b9d)
++++ b/qrscanner/src/main/java/com/vpbank/qrscanner/VPBQRScannerView.kt	(date 1727254403257)
+@@ -118,7 +118,7 @@
+             removeView(scannerOverlay)
+         }
+         scannerOverlay = ScannerOverlayFactory.provideScannerOverlay(
+-            context, qrScannerConfig.getScannerOverlayType()
++            context, qrScannerConfig
+         )
+         addView(scannerOverlay)
+         LogApp.e("Scanner overlay: ${scannerOverlay?.javaClass?.simpleName}")
+Index: qrscanner/build.gradle
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/qrscanner/build.gradle b/qrscanner/build.gradle
+--- a/qrscanner/build.gradle	(revision 4b306aab4376749fb6cbcae486c184fce9c07b9d)
++++ b/qrscanner/build.gradle	(date 1727254403256)
+@@ -118,7 +118,7 @@
+  https://stackoverflow.com/questions/73235883/how-do-i-publish-an-aar-to-maven-local-with-javadocs
+  */
+ 
+-apply from: "$rootDir/scripts/maven-publish-pomfile-generation.gradle"
++//apply from: "$rootDir/scripts/maven-publish-pomfile-generation.gradle"
+ afterEvaluate {
+     publishing {
+         publications {
+Index: qrscanner/src/main/java/com/vpbank/qrscanner/config/QRScannerConfig.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/qrscanner/src/main/java/com/vpbank/qrscanner/config/QRScannerConfig.kt b/qrscanner/src/main/java/com/vpbank/qrscanner/config/QRScannerConfig.kt
+--- a/qrscanner/src/main/java/com/vpbank/qrscanner/config/QRScannerConfig.kt	(revision 4b306aab4376749fb6cbcae486c184fce9c07b9d)
++++ b/qrscanner/src/main/java/com/vpbank/qrscanner/config/QRScannerConfig.kt	(date 1727254403257)
+@@ -30,6 +30,9 @@
+ 
+     private var isDebuggable = false // true nếu enable debug
+ 
++    private var overlayMarginBottomInPixel = 0F
++    private var overlayMarginTopInPixel = 0F
++
+     companion object {
+         @JvmStatic
+         fun build() = QRScannerConfig()
+@@ -52,7 +55,9 @@
+                 scannerOverlayType=$scannerOverlayType;
+                 autoFocus=$autoFocus;
+                 isDebugMode=$isDebuggable;
+-                onScanListener!=null => ${onScanListener != null}
++                onScanListener!=null => ${onScanListener != null};
++                overlayMarginTopInPixel=overlayMarginTopInPixel;
++                overlayMarginBottomInPixel=$overlayMarginBottomInPixel;
+             )
+         """.trimIndent()
+     }
+@@ -94,6 +99,18 @@
+ 
+     fun isDebuggable() = isDebuggable
+ 
++    fun setOverlayMarginBottomInPixel(bottomPixel: Float) = apply {
++        this.overlayMarginBottomInPixel = bottomPixel
++    }
++
++    fun getOverlayMarginBottomInPixel() = overlayMarginBottomInPixel
++
++    fun setOverlayMarginTopInPixel(topPixel: Float) = apply {
++        this.overlayMarginTopInPixel = topPixel
++    }
++
++    fun getOverlayMarginTopInPixel() = overlayMarginTopInPixel
++
+     internal fun callbackSuccess(barcodeData: BarcodeData?) {
+         onScanListener?.onSuccess(barcodeData)
+     }
+Index: app/src/main/res/layout/activity_main.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/res/layout/activity_main.xml b/app/src/main/res/layout/activity_main.xml
+--- a/app/src/main/res/layout/activity_main.xml	(revision 4b306aab4376749fb6cbcae486c184fce9c07b9d)
++++ b/app/src/main/res/layout/activity_main.xml	(date 1727254403255)
+@@ -1,17 +1,17 @@
+ <?xml version="1.0" encoding="utf-8"?>
+-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
++<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+     xmlns:app="http://schemas.android.com/apk/res-auto"
+     xmlns:tools="http://schemas.android.com/tools"
+     android:layout_width="match_parent"
+     android:layout_height="match_parent"
+     android:orientation="vertical"
+     android:gravity="center"
+-    android:padding="16dp"
++
+     tools:context=".MainActivity">
+ 
+     <com.vpbank.qrscanner.VPBQRScannerView
+         android:layout_width="match_parent"
+-        android:layout_height="0dp"
++        android:layout_height="match_parent"
+         android:layout_weight="1"
+         android:id="@+id/vpbQRScanner"/>
+ 
+@@ -19,5 +19,7 @@
+         android:id="@+id/btnOpenQRScanner"
+         android:layout_width="match_parent"
+         android:layout_height="wrap_content"
++        android:layout_gravity="bottom"
++        android:layout_margin="16dp"
+         android:text="Open QR Scanner"/>
+-</LinearLayout>
+\ No newline at end of file
++</FrameLayout>
+\ No newline at end of file
+Index: build.gradle
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/build.gradle b/build.gradle
+--- a/build.gradle	(revision 4b306aab4376749fb6cbcae486c184fce9c07b9d)
++++ b/build.gradle	(date 1727254403255)
+@@ -2,7 +2,7 @@
+ plugins {
+     id 'com.android.application' version '7.4.2' apply false
+     id 'com.android.library' version '7.4.2' apply false
+-    id 'org.jetbrains.kotlin.android' version '1.7.10' apply false
++    id 'org.jetbrains.kotlin.android' version '1.8.0' apply false
+ 
+     id 'maven-publish'
+ }
+Index: qrscanner/src/main/java/com/vpbank/qrscanner/ui/overlay/LayoutScannerOverlayType1.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/qrscanner/src/main/java/com/vpbank/qrscanner/ui/overlay/LayoutScannerOverlayType1.kt b/qrscanner/src/main/java/com/vpbank/qrscanner/ui/overlay/LayoutScannerOverlayType1.kt
+--- a/qrscanner/src/main/java/com/vpbank/qrscanner/ui/overlay/LayoutScannerOverlayType1.kt	(revision 4b306aab4376749fb6cbcae486c184fce9c07b9d)
++++ b/qrscanner/src/main/java/com/vpbank/qrscanner/ui/overlay/LayoutScannerOverlayType1.kt	(date 1727254403258)
+@@ -23,7 +23,9 @@
+ import android.view.animation.Animation
+ import androidx.appcompat.content.res.AppCompatResources
+ import androidx.core.content.ContextCompat
++import com.vpbank.log_app.LogApp
+ import com.vpbank.qrscanner.R
++import com.vpbank.qrscanner.config.QRScannerConfig
+ import com.vpbank.qrscanner.constant.ScannerConstant
+ import com.vpbank.qrscanner.model.BarcodeData
+ import com.vpbank.qrscanner.model.PositionMarker
+@@ -78,6 +80,9 @@
+     private var logoBottom = 0f
+     private var pathAnim: ValueAnimator? = null
+ 
++    private var scanQRScannerConfig: QRScannerConfig? = null
++    private val x = 1
++
+     constructor(context: Context) : super(context)
+ 
+     constructor(context: Context, attrs: AttributeSet?) : super(context, attrs)
+@@ -95,6 +100,10 @@
+         defStyleRes: Int
+     ) : super(context, attrs, defStyleAttr, defStyleRes)
+ 
++    fun setScanQRScannerConfig(scannerConfig: QRScannerConfig) {
++        this.scanQRScannerConfig = scannerConfig
++    }
++
+     override fun isEnableFirstTimeAnimation() = true
+ 
+     override fun isEnableDelayToCallbackDetectedCode() = true
+@@ -356,12 +365,30 @@
+         val startX = (w - scW) / 2f
+         val startY = (h - scH) / 2f
+ 
++        val marginTop = scanQRScannerConfig?.getOverlayMarginTopInPixel() ?: 0F
++        val marginBottom = scanQRScannerConfig?.getOverlayMarginBottomInPixel() ?: 0F
++
+         // tạo vị trí của tứ giác trạng thái chưa detect được barcode
+         left = startX + (scW - sizeSquare) / 2
+         top = startY + (scH - sizeSquare) / 2
++
++        LogApp.e("Overlay type 1: top = $top")
++
++        top += marginTop
++        if (top + sizeSquare > scH) top = scH - sizeSquare
++        LogApp.e("Overlay type 1: top with marginTop = $top")
++
++        top -= marginBottom
++        if (top < 0) top = 0F
++        LogApp.e("Overlay type 1: top with marginBottom = $top")
++
+         right = left + sizeSquare
+         bottom = top + sizeSquare
+ 
++
++        LogApp.e("scW=$scW; scH=$scH; w=$w; h=$h; sizeSquare=$sizeSquare; startX=$startX= startY=$startY")
++        LogApp.e("left=$left; top=$top; right=$right; bottom=$bottom; marginBottom=$marginBottom")
++
+         // calculate restrict bound
+         val onePerTenScH = scH / 10F
+         setRestrictBound(
+@@ -530,15 +557,15 @@
+ //        LogApp.e("corner=$corner; left=$left; top=$top; right=$right; bottom=$bottom")
+ 
+         if (isReverseScaleAnim) {
+-            left += 1
+-            right -= 1
+-            top += 1
+-            bottom -= 1
++            left += x
++            right -= x
++            top += x
++            bottom -= x
+         } else {
+-            left -= 1
+-            right += 1
+-            top -= 1
+-            bottom += 1
++            left -= x
++            right += x
++            top -= x
++            bottom += x
+         }
+ 
+     }
+Index: qrscanner/src/main/java/com/vpbank/qrscanner/ui/overlay/ScannerOverlayFactory.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/qrscanner/src/main/java/com/vpbank/qrscanner/ui/overlay/ScannerOverlayFactory.kt b/qrscanner/src/main/java/com/vpbank/qrscanner/ui/overlay/ScannerOverlayFactory.kt
+--- a/qrscanner/src/main/java/com/vpbank/qrscanner/ui/overlay/ScannerOverlayFactory.kt	(revision 4b306aab4376749fb6cbcae486c184fce9c07b9d)
++++ b/qrscanner/src/main/java/com/vpbank/qrscanner/ui/overlay/ScannerOverlayFactory.kt	(date 1727254403259)
+@@ -1,16 +1,19 @@
+ package com.vpbank.qrscanner.ui.overlay
+ 
+ import android.content.Context
++import com.vpbank.qrscanner.config.QRScannerConfig
+ import com.vpbank.qrscanner.constant.ScannerOverlayType
+ 
+ internal class ScannerOverlayFactory {
+     companion object {
+         fun provideScannerOverlay(
+             context: Context,
+-            @ScannerOverlayType type: Int
++            scanQRScannerConfig: QRScannerConfig
+         ): AbstractLayoutScannerOverlay =
+-            when (type) {
+-                ScannerOverlayType.TYPE_1 -> LayoutScannerOverlayType1(context)
++            when (scanQRScannerConfig.getScannerOverlayType()) {
++                ScannerOverlayType.TYPE_1 -> LayoutScannerOverlayType1(context).apply {
++                    setScanQRScannerConfig(scanQRScannerConfig)
++                }
+                 ScannerOverlayType.TYPE_2 -> LayoutScannerOverlayType2(context)
+                 ScannerOverlayType.TYPE_3 -> LayoutScannerOverlayType3(context)
+                 ScannerOverlayType.TYPE_4 -> LayoutScannerOverlayType4(context)
+Index: app/src/main/java/com/vpbank/demo_qrscanner/MainActivity.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/com/vpbank/demo_qrscanner/MainActivity.java b/app/src/main/java/com/vpbank/demo_qrscanner/MainActivity.java
+--- a/app/src/main/java/com/vpbank/demo_qrscanner/MainActivity.java	(revision 4b306aab4376749fb6cbcae486c184fce9c07b9d)
++++ b/app/src/main/java/com/vpbank/demo_qrscanner/MainActivity.java	(date 1727254502830)
+@@ -1,10 +1,16 @@
+ package com.vpbank.demo_qrscanner;
+ 
++import androidx.annotation.NonNull;
+ import androidx.annotation.Nullable;
+ import androidx.appcompat.app.AppCompatActivity;
++import androidx.core.app.ActivityCompat;
+ 
++import android.Manifest;
++import android.content.pm.PackageManager;
++import android.os.Build;
+ import android.os.Bundle;
+ import android.os.Handler;
++import android.util.TypedValue;
+ import android.view.View;
+ 
+ import com.vpbank.log_app.LogApp;
+@@ -32,19 +38,52 @@
+         findViewById(R.id.btnOpenQRScanner).setOnClickListener(new View.OnClickListener() {
+             @Override
+             public void onClick(View v) {
++                if (isCameraPermissionNotGranted()) {
++                    String[] permissions = {Manifest.permission.CAMERA};
++                    ActivityCompat.requestPermissions(MainActivity.this, permissions, 2010);
++                    return;
++                }
++
++                initScanner();
++            }
++        });
++    }
++
++    private void initScanner() {
+ //                vpbQRScanner.onDestroy();
+ 
+-                new Handler().postDelayed(() -> {
+-                    vpbQRScanner.startScanner(MainActivity.this, getQRScannerConfig());
+-                }, 1000);
++        new Handler().postDelayed(() -> {
++            vpbQRScanner.startScanner(MainActivity.this, getQRScannerConfig());
++        }, 1000);
++    }
++
++    private boolean isCameraPermissionNotGranted() {
++        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
++                && checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED;
++    }
++
++    @Override
++    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
++        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
++
++        if (requestCode == 2010) {
++            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
++                initScanner();
+             }
+-        });
++        }
+     }
+ 
+     private QRScannerConfig getQRScannerConfig() {
++
++        var dm = getResources().getDisplayMetrics();
++        var marginBottom = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 0F, dm);
++        var marginTop = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 0F, dm);
++
+         return QRScannerConfig.build()
+                 .setScannerAnalyzerType(ScannerAnalyzerType.MLKIT | ScannerAnalyzerType.ZXING)
+                 .setScannerOverlayType(ScannerOverlayType.TYPE_1)
++                .setOverlayMarginTopInPixel(marginTop)
++                .setOverlayMarginBottomInPixel(marginBottom)
+                 .setAutoFocus(true)
+                 .setDebuggable(true)
+                 .setScanListener(new OnScanBarcodeListener() {
